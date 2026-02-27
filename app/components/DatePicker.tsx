@@ -47,7 +47,7 @@ export function DatePicker({ selectedDate, onDateChange }: DatePickerProps) {
       </button>
       
       <div className="text-center">
-        <h2 className="text-lg font-semibold text-gray-800">
+        <h2 className="text-lg font-semibold text-black">
           {formatDate(selectedDate)}
         </h2>
         {!isToday && (

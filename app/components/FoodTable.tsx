@@ -39,7 +39,7 @@ export function FoodTable({ entries, onDelete }: FoodTableProps) {
             {entries.map((entry) => (
               <tr key={entry.id} className="border-b border-gray-100 hover:bg-gray-50">
                 <td className="px-4 py-3 text-sm">{entry.food_name}</td>
-                <td className="px-4 py-3 text-sm text-right text-gray-600">{entry.amount}</td>
+                <td className="px-4 py-3 text-sm text-right text-black">{entry.amount}</td>
                 <td className="px-4 py-3 text-sm text-right">{entry.calories}</td>
                 <td className="px-4 py-3 text-sm text-right">{entry.protein}g</td>
                 <td className="px-4 py-3 text-sm text-right">{entry.carbs}g</td>
@@ -58,7 +58,7 @@ export function FoodTable({ entries, onDelete }: FoodTableProps) {
             ))}
             {entries.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={8} className="px-4 py-8 text-center text-black">
                   No entries yet. Add your first meal above!
                 </td>
               </tr>

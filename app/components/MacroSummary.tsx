@@ -43,7 +43,7 @@ export function MacroSummary({ entries }: MacroSummaryProps) {
             <div className={`text-2xl font-bold ${macro.textColor}`}>
               {Math.round(macro.value)}{macro.unit || ''}
             </div>
-            <div className="text-xs text-gray-500 mt-1">{macro.label}</div>
+            <div className="text-xs text-black mt-1">{macro.label}</div>
           </div>
         ))}
       </div>

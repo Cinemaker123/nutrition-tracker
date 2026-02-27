@@ -51,14 +51,8 @@ function NutritionTracker() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-white py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">📋 Daily Food Log</h1>
-          <p className="text-gray-500">Track your nutrition with natural language</p>
-        </div>
-
         {/* Date Navigation */}
         <DatePicker selectedDate={selectedDate} onDateChange={setSelectedDate} />
 
@@ -69,7 +63,7 @@ function NutritionTracker() {
         {isLoading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="text-gray-500 mt-2">Loading...</p>
+            <p className="text-black mt-2">Loading...</p>
           </div>
         ) : (
           <>
