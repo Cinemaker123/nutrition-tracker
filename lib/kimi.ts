@@ -1,10 +1,5 @@
 import OpenAI from 'openai';
 
-export const kimi = new OpenAI({
-  apiKey: process.env.KIMI_API_KEY,
-  baseURL: 'https://api.moonshot.cn/v1',
-});
-
 export const SYSTEM_PROMPT = `You are a precise nutrition analyzer. Given a food description, extract nutritional information and return ONLY a JSON object.
 
 Required fields:
@@ -25,3 +20,10 @@ Rules:
 Example:
 Input: "2 eggs and a slice of sourdough toast"
 Output: {"food_name":"Eggs and sourdough toast","amount":"2 eggs + 1 slice","calories":340,"protein":18.5,"carbs":28.0,"fat":16.0,"fiber":2.5}`;
+
+export function createKimiClient() {
+  return new OpenAI({
+    apiKey: process.env.KIMI_API_KEY,
+    baseURL: 'https://api.moonshot.cn/v1',
+  });
+}

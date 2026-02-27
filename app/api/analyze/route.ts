@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { kimi, SYSTEM_PROMPT } from '@/lib/kimi';
+import { createKimiClient, SYSTEM_PROMPT } from '@/lib/kimi';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -25,6 +25,7 @@ export async function POST(req: Request) {
 
   try {
     // Call Kimi API with JSON Mode
+    const kimi = createKimiClient();
     const response = await kimi.chat.completions.create({
       model: 'kimi-k2-turbo-preview',
       messages: [
