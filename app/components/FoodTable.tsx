@@ -27,7 +27,7 @@ export function FoodTable({ entries, onDelete }: FoodTableProps) {
           <thead>
             <tr className="bg-gray-800  text-white">
               <th className="px-4 py-3 text-left text-sm font-medium">Food</th>
-              <th className="px-4 py-3 text-right text-sm font-medium">Amount (g)</th>
+              <th className="px-4 py-3 text-right text-sm font-medium">g</th>
               <th className="px-4 py-3 text-right text-sm font-medium">kcal</th>
               <th className="px-4 py-3 text-right text-sm font-medium">Protein</th>
               <th className="px-4 py-3 text-right text-sm font-medium">Carbs</th>

@@ -174,12 +174,54 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
   });
 
   // Copy recipe to clipboard
+  const [copyMessage, setCopyMessage] = useState('');
+  
   const handleCopyRecipe = async (recipe: RecipeSuggestion) => {
     const text = `${recipe.name} (${recipe.primary_macro})\n${recipe.description}`;
+    
+    // Check if Clipboard API is available
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        setCopyMessage('Copied!');
+        setTimeout(() => setCopyMessage(''), 1500);
+      } catch (err) {
+        console.error('Failed to copy:', err);
+        fallbackCopy(text);
+      }
+    } else {
+      // Fallback for mobile browsers without Clipboard API
+      fallbackCopy(text);
+    }
+  };
+  
+  const fallbackCopy = (text: string) => {
+    // Create temporary textarea element
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    textarea.style.top = '0';
+    document.body.appendChild(textarea);
+    
     try {
-      await navigator.clipboard.writeText(text);
+      textarea.focus();
+      textarea.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textarea);
+      
+      if (successful) {
+        setCopyMessage('Copied!');
+        setTimeout(() => setCopyMessage(''), 1500);
+      } else {
+        setCopyMessage('Copy failed');
+        setTimeout(() => setCopyMessage(''), 1500);
+      }
     } catch (err) {
-      console.error('Failed to copy:', err);
+      document.body.removeChild(textarea);
+      console.error('Fallback copy failed:', err);
+      setCopyMessage('Copy not supported');
+      setTimeout(() => setCopyMessage(''), 1500);
     }
   };
 
@@ -222,6 +264,10 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
 
         {error && (
           <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
+        )}
+        
+        {copyMessage && (
+          <p className="text-green-500 text-sm mb-4 text-center">{copyMessage}</p>
         )}
 
         <div className="space-y-6">
