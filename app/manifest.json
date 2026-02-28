@@ -1,6 +1,6 @@
 {
   "name": "My Food Tracker",
-  "short_name": "FoodTrack",
+  "short_name": "Tracker",
   "icons": [
     {
       "src": "/icon-192.png",
