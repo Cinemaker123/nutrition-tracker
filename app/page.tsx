@@ -86,7 +86,7 @@ function NutritionTracker() {
                 className="w-full py-4 bg-[#3a8fd1] text-white rounded-lg font-medium hover:bg-[#2d7bc4] transition-colors flex items-center justify-center gap-2"
               >
                 <Lightbulb className="w-5 h-5" />
-                Insights — Recipes & Analysis
+                Insights
               </button>
             </div>
           </>

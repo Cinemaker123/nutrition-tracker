@@ -26,14 +26,6 @@ function InsightsPage() {
         <ThemeToggle />
       </div>
 
-      {/* Page Title */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--foreground)]">Insights</h1>
-        <p className="text-[var(--muted)] mt-1">
-          AI-powered recipe suggestions and nutrition analysis
-        </p>
-      </div>
-
       {/* Tabs */}
       <InsightsTabs
         recipesContent={<RecipesTab />}
