@@ -39,24 +39,24 @@ export async function POST(req: Request) {
       throw new Error('No food items parsed');
     }
 
-    // Take the first result
-    const nutrition = results[0];
+    // Prepare all food items for insertion
+    const entryDate = date || new Date().toISOString().split('T')[0];
+    const entries = results.map(nutrition => ({
+      food: nutrition.food,
+      amount_g: nutrition.amount_g,
+      kcal: nutrition.kcal,
+      protein_g: nutrition.protein_g,
+      carbs_g: nutrition.carbs_g,
+      fat_g: nutrition.fat_g,
+      fiber_g: nutrition.fiber_g,
+      entry_date: entryDate
+    }));
 
-    // Add to database (field names match Gemini output)
+    // Add all to database
     const { data, error } = await supabase
       .from('food_entries')
-      .insert({
-        food: nutrition.food,
-        amount_g: nutrition.amount_g,
-        kcal: nutrition.kcal,
-        protein_g: nutrition.protein_g,
-        carbs_g: nutrition.carbs_g,
-        fat_g: nutrition.fat_g,
-        fiber_g: nutrition.fiber_g,
-        entry_date: date || new Date().toISOString().split('T')[0]
-      })
-      .select()
-      .single();
+      .insert(entries)
+      .select();
 
     if (error) {
       throw error;

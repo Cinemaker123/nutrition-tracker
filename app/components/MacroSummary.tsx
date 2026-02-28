@@ -46,7 +46,7 @@ function getSmartMessage(
     if (percentage < 50 && hour >= 16) { // After 4pm
       return { text: `⚠️ ${Math.round(remaining)}g still needed — prioritize protein in remaining meals`, status: 'warn' };
     }
-    if (percentage < 30) {
+    if (percentage < 40 && hour >= 20) { // After 8pm
       return { text: `⚠️ Muscle loss risk — prioritize protein!`, status: 'warn' };
     }
   }
