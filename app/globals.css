@@ -167,6 +167,17 @@ input::placeholder {
   background-color: #d0d0d0 !important;
 }
 
+/* Analysis tab active state */
+.analysis-tab-active {
+  background-color: #d1d5db !important; /* gray-300 */
+  color: #000000 !important;
+}
+
+.dark .analysis-tab-active {
+  background-color: #9ca3af !important; /* gray-400 - slightly darker for dark mode */
+  color: #000000 !important;
+}
+
 .dark .analyze-btn:disabled {
   background-color: #444 !important;
   color: #888 !important;

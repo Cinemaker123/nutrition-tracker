@@ -28,7 +28,7 @@ export function InsightsTabs({ recipesContent, analysisContent }: InsightsTabsPr
           onClick={() => setActiveTab('analysis')}
           className={`flex-1 py-3 px-4 font-medium transition-colors ${
             activeTab === 'analysis'
-              ? 'bg-gray-300 text-black'
+              ? 'analysis-tab-active'
               : 'bg-[var(--card-bg)] text-[var(--foreground)] hover:bg-[var(--hover-bg)]'
           }`}
         >
