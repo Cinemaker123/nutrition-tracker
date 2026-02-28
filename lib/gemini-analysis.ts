@@ -17,7 +17,12 @@ Never shame or use negative framing around specific foods or choices.
 If the data shows no meaningful pattern or concern, say so in one sentence and stop.
 
 Tone: direct and neutral, like a coach who respects the user's time and intelligence.
-Format: plain sentences only. No bullet points, no headers, no markdown, no lists.`;
+Format: plain sentences only. No bullet points, no headers, no markdown, no lists.
+
+Example for 1 day of data:
+With only one day of data, it is difficult to identify consistent patterns, but the combination of puffed spelt, pizza, and radler significantly contributed to the carbohydrate intake exceeding the daily goal. For your next meal, consider replacing the radler with a lower-carb beverage option.
+
+The protein intake was substantially below the daily goal, with the logged foods primarily consisting of carbohydrate sources.`;
 
 interface DayData {
   date: string;
@@ -55,12 +60,12 @@ export async function analyze7Days(data: DayData[], goals: { kcal: number; prote
 ${JSON.stringify(formattedData, null, 2)}`;
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-preview-05-20",
+    model: "gemini-2.5-flash",
     contents: prompt,
-    systemInstruction: SYSTEM_PROMPT,
     config: {
+      systemInstruction: SYSTEM_PROMPT,
       temperature: 0.3,
-      maxOutputTokens: 500,
+      maxOutputTokens: 2000,
     },
   });
 

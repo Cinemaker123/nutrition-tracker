@@ -19,4 +19,11 @@ type FoodEntry = {
   created_at: string;
 };
 
-export type { FoodEntry };
+type Analysis = {
+  id: string;
+  created_at: string;
+  date_range: string;
+  analysis: string;
+};
+
+export type { FoodEntry, Analysis };
