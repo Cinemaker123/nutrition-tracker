@@ -19,6 +19,7 @@ export function AnalysisTab({ selectedDate: initialDate }: AnalysisTabProps) {
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [isLoadingArchive, setIsLoadingArchive] = useState(false);
   const [selectedDate, setSelectedDate] = useState(initialDate || new Date().toISOString().split('T')[0]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleAnalyze = async () => {
     setIsLoading(true);
@@ -92,6 +93,40 @@ export function AnalysisTab({ selectedDate: initialDate }: AnalysisTabProps) {
     }
   };
 
+  const handleSaveToArchive = async () => {
+    if (!analysis || !dateRange) return;
+
+    setIsSaving(true);
+    const password = localStorage.getItem('app_password');
+
+    try {
+      const response = await fetch('/api/analyses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-password': password || '',
+        },
+        body: JSON.stringify({ date_range: dateRange, analysis }),
+      });
+
+      if (response.status === 401) {
+        setError('Invalid password');
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to save');
+      }
+
+      // Clear analysis after saving
+      setAnalysis(null);
+    } catch (err) {
+      setError('Failed to save analysis');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleDeleteAnalysis = useCallback(async (id: string) => {
     const password = localStorage.getItem('app_password');
 
@@ -124,15 +159,21 @@ export function AnalysisTab({ selectedDate: initialDate }: AnalysisTabProps) {
         <button
           onClick={handleAnalyze}
           disabled={isLoading}
-          className="analyze-btn flex-1 py-3 bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          className="analyze-btn flex-1 h-[46px] bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
         >
           {isLoading ? 'Analyzing...' : 'Generate New Analysis'}
         </button>
-
+        <button
+          onClick={handleSaveToArchive}
+          disabled={isSaving || !analysis}
+          className="px-4 h-[46px] bg-[#27ae60] text-white rounded-lg font-medium hover:bg-[#219653] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center"
+        >
+          {isSaving ? 'Saving...' : 'Save to Archive'}
+        </button>
         <button
           onClick={loadArchive}
           disabled={isLoadingArchive}
-          className="px-4 py-3 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center"
+          className="px-4 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center"
         >
           {isLoadingArchive ? 'Loading...' : 'View Archive'}
         </button>

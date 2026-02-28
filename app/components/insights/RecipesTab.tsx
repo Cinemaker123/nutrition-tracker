@@ -159,6 +159,52 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
     setArchivedRecipes((prev) => prev.filter((r) => r.id !== id));
   }, []);
 
+  // Delete individual recipe from archive group
+  const handleDeleteIndividualRecipe = useCallback(async (archiveId: string, recipeIndex: number) => {
+    const archive = archivedRecipes.find(r => r.id === archiveId);
+    if (!archive) return;
+
+    const updatedSuggestions = archive.suggestions.filter((_, i) => i !== recipeIndex);
+    
+    // If no recipes left, delete the whole archive
+    if (updatedSuggestions.length === 0) {
+      await handleDeleteArchivedRecipe(archiveId);
+      return;
+    }
+
+    const password = localStorage.getItem('app_password');
+
+    // Update the archive with filtered suggestions
+    const response = await fetch('/api/recipes/archive', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-password': password || '',
+      },
+      body: JSON.stringify({
+        date_range: archive.date_range,
+        suggestions: updatedSuggestions,
+        based_on_dates: archive.based_on_dates,
+      }),
+    });
+
+    if (response.status === 401) {
+      setError('Invalid password');
+      throw new Error('Invalid password');
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to update');
+    }
+
+    const newArchive = await response.json();
+
+    // Remove old archive and add new one
+    setArchivedRecipes((prev) => 
+      prev.filter((r) => r.id !== archiveId).concat(newArchive.recipe)
+    );
+  }, [archivedRecipes, handleDeleteArchivedRecipe]);
+
   const { handleDeleteClick, getDeleteState } = useDeleteWithConfirm({
     onDelete: async (indexStr: string) => {
       const index = parseInt(indexStr, 10);
@@ -172,6 +218,35 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
   } = useDeleteWithConfirm({
     onDelete: handleDeleteArchivedRecipe,
   });
+
+  // Track delete clicks for individual archived recipes
+  const [recipeDeleteClicks, setRecipeDeleteClicks] = useState<Record<string, number>>({});
+
+  const handleArchivedRecipeDeleteClick = (archiveId: string, recipeIndex: number) => {
+    const key = `${archiveId}-${recipeIndex}`;
+    const clicks = (recipeDeleteClicks[key] || 0) + 1;
+    setRecipeDeleteClicks(prev => ({ ...prev, [key]: clicks }));
+
+    if (clicks >= 2) {
+      handleDeleteIndividualRecipe(archiveId, recipeIndex);
+      // Reset clicks
+      setRecipeDeleteClicks(prev => {
+        const newClicks = { ...prev };
+        delete newClicks[key];
+        return newClicks;
+      });
+    }
+  };
+
+  const getArchivedRecipeDeleteState = (archiveId: string, recipeIndex: number) => {
+    const key = `${archiveId}-${recipeIndex}`;
+    const clicks = recipeDeleteClicks[key] || 0;
+    return {
+      clicks,
+      colorClass: clicks === 0 ? 'text-gray-400 hover:text-orange-400' : 'text-red-500 hover:text-red-600',
+      title: clicks === 0 ? 'Click to delete' : 'Click again to confirm delete',
+    };
+  };
 
   // Get macro color
   const getMacroColor = (macro: string) => {
@@ -239,63 +314,79 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
                   <span className="text-xs font-medium text-[#3a8fd1]">
                     {archive.date_range}
                   </span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-[var(--muted)]">
-                      {new Date(archive.created_at).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
-                    {archivedRecipes.length > 1 && (
-                      <button
-                        onClick={() => handleArchiveDeleteClick(archive.id)}
-                        className={`p-1 rounded transition-colors ${getArchiveDeleteState(archive.id).colorClass}`}
-                        title={getArchiveDeleteState(archive.id).title}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M3 6h18" />
-                          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
+                  <button
+                    onClick={() => handleArchiveDeleteClick(archive.id)}
+                    className={`p-1 rounded transition-colors ${getArchiveDeleteState(archive.id).colorClass}`}
+                    title={getArchiveDeleteState(archive.id).title}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M3 6h18" />
+                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                    </svg>
+                  </button>
                 </div>
                 <div className="space-y-3">
-                  {archive.suggestions.map((recipe, idx) => (
-                    <div
-                      key={idx}
-                      className="p-3 bg-[var(--card-bg-alt)] rounded border border-[var(--border-color)]"
-                    >
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-semibold text-[var(--foreground)] text-sm">
-                          {recipe.name}
-                        </h4>
-                        <span
-                          className={`text-xs font-medium px-2 py-0.5 rounded bg-[var(--card-bg)] ${getMacroColor(
-                            recipe.primary_macro
-                          )}`}
-                        >
-                          {recipe.primary_macro}
-                        </span>
+                  {archive.suggestions.map((recipe, idx) => {
+                    const deleteState = getArchivedRecipeDeleteState(archive.id, idx);
+                    return (
+                      <div
+                        key={idx}
+                        className="p-3 bg-[var(--card-bg-alt)] rounded border border-[var(--border-color)]"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold text-[var(--foreground)] text-sm">
+                                {recipe.name}
+                              </h4>
+                              <span
+                                className={`text-xs font-medium px-2 py-0.5 rounded bg-[var(--card-bg)] ${getMacroColor(
+                                  recipe.primary_macro
+                                )}`}
+                              >
+                                {recipe.primary_macro}
+                              </span>
+                            </div>
+                            <p className="text-sm text-[var(--muted)]">
+                              {recipe.description}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleArchivedRecipeDeleteClick(archive.id, idx)}
+                            className={`p-1 rounded transition-colors ml-2 ${deleteState.colorClass}`}
+                            title={deleteState.title}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M3 6h18" />
+                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
-                      <p className="text-sm text-[var(--muted)]">
-                        {recipe.description}
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))

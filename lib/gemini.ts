@@ -20,7 +20,7 @@ export async function parseMacros(userInput: string): Promise<MacroResult[]> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.5-flash-lite",
     contents: userInput,
     config: {
       systemInstruction: SYSTEM_PROMPT,
