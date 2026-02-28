@@ -8,6 +8,7 @@ interface FoodTableProps {
 }
 
 export function FoodTable({ entries, onDelete }: FoodTableProps) {
+  // Use monospace font for table
   const totals = entries.reduce(
     (acc, entry) => ({
       kcal: acc.kcal + entry.kcal,
@@ -22,7 +23,7 @@ export function FoodTable({ entries, onDelete }: FoodTableProps) {
   return (
     <div className="bg-white  rounded-lg shadow-sm overflow-hidden mb-6">
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full font-mono text-sm">
           <thead>
             <tr className="bg-gray-800  text-white">
               <th className="px-4 py-3 text-left text-sm font-medium">Food</th>

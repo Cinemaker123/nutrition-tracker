@@ -1,5 +1,18 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { DM_Mono, Syne } from "next/font/google";
+
+const dmMono = DM_Mono({
+  weight: ['400', '500'],
+  subsets: ['latin'],
+  variable: '--font-dm-mono',
+});
+
+const syne = Syne({
+  weight: ['700', '800'],
+  subsets: ['latin'],
+  variable: '--font-syne',
+});
 
 export const metadata: Metadata = {
   title: "Nutrition Tracker",
@@ -14,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className="antialiased"
+        className={`${dmMono.variable} ${syne.variable} antialiased`}
         suppressHydrationWarning
       >
         {children}

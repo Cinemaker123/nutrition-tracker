@@ -1,28 +1,42 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #f9f9f9;
   --foreground: #171717;
   --card-bg: #ffffff;
   --input-bg: #ffffff;
   --border-color: #d1d5db;
   --hover-bg: #f3f4f6;
+  --muted: #666;
+  
+  --kcal: #e07b39;
+  --prot: #3a8fd1;
+  --carb: #d4a017;
+  --fat: #c0392b;
+  --fiber: #27ae60;
 }
 
 .dark {
-  --background: #111827;
-  --foreground: #f9fafb;
-  --card-bg: #1f2937;
-  --input-bg: #374151;
-  --border-color: #4b5563;
-  --hover-bg: #374151;
+  --background: #0d0d0d;
+  --foreground: #e8e8e8;
+  --card-bg: #151515;
+  --input-bg: #1c1c1c;
+  --border-color: #2a2a2a;
+  --hover-bg: #1c1c1c;
+  --muted: #555;
+  
+  --kcal: #ff6b35;
+  --prot: #4dabf7;
+  --carb: #ffd43b;
+  --fat: #f06595;
+  --fiber: #69db7c;
 }
 
 /* Base styles */
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: sans-serif;
+  font-family: var(--font-dm-mono), 'DM Mono', monospace;
 }
 
 /* Page background */
@@ -34,13 +48,13 @@ body {
 .dark .bg-white.rounded-lg,
 .dark .bg-white.shadow-sm {
   background-color: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
 }
 
 /* Input backgrounds */
-.dark input,
-.dark .bg-white.dark\\:bg-gray-700,
-.dark [class*="bg-white"][class*="dark:bg-gray-700"] {
+.dark input {
   background-color: var(--input-bg) !important;
+  border-color: var(--border-color) !important;
 }
 
 /* Text colors */
@@ -62,10 +76,28 @@ body {
 
 /* Table headers */
 .dark .bg-gray-800 {
-  background-color: #030712 !important;
+  background-color: #0d0d0d !important;
+  border-bottom: 1px solid var(--border-color) !important;
 }
 
 /* Total row */
 .dark .bg-gray-100.font-semibold {
-  background-color: #374151 !important;
+  background-color: transparent !important;
+  color: var(--foreground) !important;
+}
+
+/* Progress bar backgrounds */
+.dark .bg-gray-200,
+.dark .bg-gray-700 {
+  background-color: var(--input-bg) !important;
+}
+
+/* Syne font for card values */
+.font-syne {
+  font-family: var(--font-syne), 'Syne', sans-serif;
+}
+
+/* DM Mono for table and body */
+.font-mono {
+  font-family: var(--font-dm-mono), 'DM Mono', monospace;
 }

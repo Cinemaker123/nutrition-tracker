@@ -11,13 +11,13 @@ const GOALS = {
   fiber_g: 30,
 };
 
-// Exact colors from macros_today.html
+// Colors using CSS variables for dark mode compatibility
 const MACROS = {
-  kcal: { label: 'Calories', emoji: '🔥', bar: '#e07b39', text: '#e07b39' },
-  protein_g: { label: 'Protein', emoji: '💪', bar: '#3a8fd1', text: '#3a8fd1' },
-  carbs_g: { label: 'Carbs', emoji: '🍞', bar: '#d4a017', text: '#d4a017' },
-  fat_g: { label: 'Fat', emoji: '🫒', bar: '#c0392b', text: '#c0392b' },
-  fiber_g: { label: 'Fiber', emoji: '🌾', bar: '#27ae60', text: '#27ae60' },
+  kcal: { label: 'kcal', emoji: '🔥', cssVar: '--kcal' },
+  protein_g: { label: 'Protein', emoji: '💪', cssVar: '--prot' },
+  carbs_g: { label: 'Carbs', emoji: '🍞', cssVar: '--carb' },
+  fat_g: { label: 'Fat', emoji: '🫒', cssVar: '--fat' },
+  fiber_g: { label: 'Fiber', emoji: '🌾', cssVar: '--fiber' },
 };
 
 interface MacroSummaryProps {
@@ -98,14 +98,21 @@ export function MacroSummary({ entries }: MacroSummaryProps) {
 
   return (
     <div className="mb-6">
-      {/* Cards */}
-      <div className="grid grid-cols-5 gap-3 mb-6">
-        {macrosList.map(({ name, value }) => {
+      {/* Cards - Responsive: 5 cols on desktop, 2-2-1 on mobile */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+        {macrosList.map(({ name, value }, index) => {
           const config = MACROS[name];
           const unit = name === 'kcal' ? '' : 'g';
+          const isLast = index === macrosList.length - 1;
           return (
-            <div key={name} className="bg-white  rounded-lg shadow-sm p-4 text-center">
-              <div className="text-2xl font-bold" style={{ color: config.text }}>
+            <div 
+              key={name} 
+              className={`bg-white rounded-lg shadow-sm p-4 text-center ${isLast ? 'col-span-2 sm:col-span-1' : ''}`}
+            >
+              <div 
+                className="text-2xl font-bold font-syne" 
+                style={{ color: `var(${config.cssVar})` }}
+              >
                 {Math.round(value)}{unit}
               </div>
               <div className="text-xs text-black mt-1">
@@ -139,7 +146,7 @@ export function MacroSummary({ entries }: MacroSummaryProps) {
                 <div className="h-3 bg-gray-200  rounded-full overflow-hidden">
                   <div
                     className="h-full transition-all duration-300"
-                    style={{ width: `${percentage}%`, backgroundColor: config.bar }}
+                    style={{ width: `${percentage}%`, backgroundColor: `var(${config.cssVar})` }}
                   />
                 </div>
                 <div className={`text-xs mt-1 font-medium ${
