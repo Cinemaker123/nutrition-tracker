@@ -320,9 +320,9 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
           <button
             onClick={loadArchive}
             disabled={isLoadingArchive}
-            className="px-4 py-4 bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-3 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center"
           >
-            {isLoadingArchive ? 'Loading...' : 'Archive'}
+            {isLoadingArchive ? 'Loading...' : 'View Archive'}
           </button>
         </div>
 
@@ -366,16 +366,16 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
         <button
           onClick={handleSaveToArchive}
           disabled={isSaving || !recipes.length}
-          className="px-4 py-3 bg-[#27ae60] text-white rounded-lg font-medium hover:bg-[#219653] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          className="px-4 py-3 h-[46px] bg-[#27ae60] text-white rounded-lg font-medium hover:bg-[#219653] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center"
         >
           {isSaving ? 'Saving...' : 'Save to Archive'}
         </button>
         <button
           onClick={loadArchive}
           disabled={isLoadingArchive}
-          className="px-4 py-3 bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors"
+          className="px-4 py-3 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center"
         >
-          {isLoadingArchive ? 'Loading...' : 'Archive'}
+          {isLoadingArchive ? 'Loading...' : 'View Archive'}
         </button>
       </div>
 

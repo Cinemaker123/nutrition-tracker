@@ -132,9 +132,9 @@ export function AnalysisTab({ selectedDate: initialDate }: AnalysisTabProps) {
         <button
           onClick={loadArchive}
           disabled={isLoadingArchive}
-          className="px-4 py-3 bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors"
+          className="px-4 py-3 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center"
         >
-          {isLoadingArchive ? 'Loading...' : showArchive ? 'Hide Archive' : 'View Archive'}
+          {isLoadingArchive ? 'Loading...' : 'View Archive'}
         </button>
       </div>
 
