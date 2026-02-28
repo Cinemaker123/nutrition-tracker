@@ -5,12 +5,14 @@ const SYSTEM_PROMPT = `You are a plant-based nutrition assistant.
 
 Return exactly 2-3 plant-based meal suggestions that would best address the macro gaps from the provided food log.
 
-For each suggestion return only:
-- Name
-- One sentence description
-- The primary macro it addresses
-
-No recipe, no ingredients, no steps. Plain text, no markdown, no bullet points.`;
+Respond ONLY with a JSON array, no markdown, no explanation:
+[
+  {
+    "name": string,
+    "description": string (one sentence),
+    "primary_macro": string (e.g. "protein")
+  }
+]`;
 
 export async function generateRecipes(
   data: DayData[],
@@ -81,45 +83,33 @@ ${JSON.stringify(formattedData, null, 2)}`;
     throw new Error("Empty response from Gemini");
   }
 
-  // Parse the response into structured suggestions
+  // Parse the JSON response
   return parseRecipeSuggestions(text);
 }
 
 function parseRecipeSuggestions(text: string): RecipeSuggestion[] {
-  const lines = text.split('\n').filter(line => line.trim());
-  const suggestions: RecipeSuggestion[] = [];
-  
-  let currentSuggestion: Partial<RecipeSuggestion> = {};
-  
-  for (const line of lines) {
-    const trimmed = line.trim();
-    
-    // Skip empty lines
-    if (!trimmed) continue;
-    
-    // Check if line contains macro indicator
-    const macroMatch = trimmed.match(/(protein|carbs?|fat|fiber|calories?)/i);
-    
-    if (macroMatch && currentSuggestion.name && currentSuggestion.description) {
-      // This line is the macro indicator
-      const macro = macroMatch[1].toLowerCase();
-      currentSuggestion.primary_macro = macro === 'calories' || macro === 'calorie' ? 'kcal' : macro as 'protein' | 'carbs' | 'fat' | 'fiber';
-      suggestions.push(currentSuggestion as RecipeSuggestion);
-      currentSuggestion = {};
-    } else if (!currentSuggestion.name) {
-      // First line is the name
-      currentSuggestion.name = trimmed.replace(/^[-•*]\s*/, '');
-    } else if (!currentSuggestion.description) {
-      // Second line is the description
-      currentSuggestion.description = trimmed.replace(/^[-•*]\s*/, '');
+  try {
+    // Extract JSON from response (in case there's any extra text)
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) {
+      throw new Error("No JSON array found in response");
     }
+    
+    const suggestions = JSON.parse(jsonMatch[0]) as RecipeSuggestion[];
+    
+    // Validate the structure
+    if (!Array.isArray(suggestions)) {
+      throw new Error("Response is not an array");
+    }
+    
+    return suggestions.map((s, i) => ({
+      name: s.name || `Suggestion ${i + 1}`,
+      description: s.description || "No description provided",
+      primary_macro: s.primary_macro || "protein",
+    }));
+  } catch (error) {
+    console.error("Failed to parse recipe suggestions:", error);
+    console.error("Raw response:", text);
+    throw new Error("Failed to parse recipe suggestions from AI response");
   }
-  
-  // Handle case where last suggestion doesn't have macro explicitly stated
-  if (currentSuggestion.name && currentSuggestion.description && !currentSuggestion.primary_macro) {
-    currentSuggestion.primary_macro = 'protein'; // Default fallback
-    suggestions.push(currentSuggestion as RecipeSuggestion);
-  }
-  
-  return suggestions;
 }
