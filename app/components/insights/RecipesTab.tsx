@@ -313,7 +313,7 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
           <button
             onClick={loadRecipes}
             disabled={isLoading}
-            className="flex-1 py-4 bg-[#3a8fd1] text-white rounded-lg font-medium hover:bg-[#2d7bc4] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 h-[46px] bg-[#3a8fd1] text-white rounded-lg font-medium hover:bg-[#2d7bc4] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
           >
             {isLoading ? 'Generating...' : 'Generate Recipe Suggestions'}
           </button>
