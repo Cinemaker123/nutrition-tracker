@@ -9,6 +9,7 @@ import { FoodInput } from './components/FoodInput';
 import { FoodTable } from './components/FoodTable';
 import { MacroSummary } from './components/MacroSummary';
 import { supabase, FoodEntry } from '@/lib/supabase';
+import { AnalysisButton } from './components/AnalysisButton';
 
 function NutritionTracker() {
   const [selectedDate, setSelectedDate] = useState(() => 
@@ -75,6 +76,9 @@ function NutritionTracker() {
 
             {/* Food Table */}
             <FoodTable entries={entries} onDelete={handleDelete} />
+
+            {/* 7-Day Analysis */}
+            <AnalysisButton selectedDate={selectedDate} />
           </>
         )}
       </div>
