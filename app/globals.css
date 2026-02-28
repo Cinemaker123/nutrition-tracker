@@ -156,3 +156,18 @@ input::placeholder {
 .font-mono {
   font-family: var(--font-dm-mono), 'DM Mono', monospace;
 }
+
+/* Analysis button - light in dark mode */
+.dark .analyze-btn {
+  background-color: #e8e8e8 !important;
+  color: #1a1a1a !important;
+}
+
+.dark .analyze-btn:hover {
+  background-color: #d0d0d0 !important;
+}
+
+.dark .analyze-btn:disabled {
+  background-color: #444 !important;
+  color: #888 !important;
+}

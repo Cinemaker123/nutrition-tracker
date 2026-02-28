@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { Analysis } from '@/lib/supabase';
 
 interface AnalysisButtonProps {
@@ -17,6 +17,7 @@ export function AnalysisButton({ selectedDate }: AnalysisButtonProps) {
   const [showArchive, setShowArchive] = useState(false);
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [isLoadingArchive, setIsLoadingArchive] = useState(false);
+  const [deleteClicks, setDeleteClicks] = useState<Record<string, number>>({});
 
   // Format date for display
   const formatDate = (dateStr: string) => {
@@ -128,6 +129,7 @@ export function AnalysisButton({ selectedDate }: AnalysisButtonProps) {
 
       const data = await response.json();
       setAnalyses(data.analyses || []);
+      setDeleteClicks({}); // Reset click counts
       setShowArchive(true);
     } catch (err) {
       setError('Failed to load archive');
@@ -136,13 +138,54 @@ export function AnalysisButton({ selectedDate }: AnalysisButtonProps) {
     }
   };
 
+  const handleDeleteClick = async (id: string) => {
+    const clicks = (deleteClicks[id] || 0) + 1;
+    setDeleteClicks({ ...deleteClicks, [id]: clicks });
+
+    if (clicks >= 3) {
+      // Actually delete
+      const password = localStorage.getItem('app_password');
+      
+      try {
+        const response = await fetch(`/api/analyses/${id}`, {
+          method: 'DELETE',
+          headers: { 'x-password': password || '' },
+        });
+
+        if (response.status === 401) {
+          setError('Invalid password');
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error('Failed to delete');
+        }
+
+        // Remove from local state
+        setAnalyses(analyses.filter(a => a.id !== id));
+        const newClicks = { ...deleteClicks };
+        delete newClicks[id];
+        setDeleteClicks(newClicks);
+      } catch (err) {
+        setError('Failed to delete analysis');
+      }
+    }
+  };
+
+  const getTrashColor = (id: string) => {
+    const clicks = deleteClicks[id] || 0;
+    if (clicks === 0) return 'text-gray-400 hover:text-gray-600';
+    if (clicks === 1) return 'text-orange-400 hover:text-orange-500';
+    return 'text-red-500 hover:text-red-600';
+  };
+
   return (
     <div className="mt-8 pt-8 border-t border-[var(--border-color)]">
       <div className="flex gap-3">
         <button
           onClick={handleAnalyze}
           disabled={isLoading}
-          className="flex-1 py-4 bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          className="analyze-btn flex-1 py-4 bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
         >
           {isLoading ? 'Analyzing 7 days...' : 'Analyze Last 7 Days'}
         </button>
@@ -205,27 +248,53 @@ export function AnalysisButton({ selectedDate }: AnalysisButtonProps) {
           {analyses.length === 0 ? (
             <p className="text-[var(--muted)] text-sm italic">No archived analyses yet.</p>
           ) : (
-            analyses.map((item) => (
-              <div 
-                key={item.id} 
-                className="p-4 bg-[var(--card-bg)] rounded-lg shadow-sm border border-[var(--border-color)]"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-medium text-[#8B6914]">{item.date_range}</span>
-                  <span className="text-xs text-[var(--muted)]">
-                    {new Date(item.created_at).toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </span>
+            analyses.map((item) => {
+              const clickCount = deleteClicks[item.id] || 0;
+              return (
+                <div 
+                  key={item.id} 
+                  className="p-4 bg-[var(--card-bg)] rounded-lg shadow-sm border border-[var(--border-color)]"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-xs font-medium text-[#8B6914]">{item.date_range}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-[var(--muted)]">
+                        {new Date(item.created_at).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteClick(item.id)}
+                        className={`p-1 rounded transition-colors ${getTrashColor(item.id)}`}
+                        title={clickCount === 0 ? 'Click 3 times to delete' : clickCount === 1 ? 'Click 2 more times' : 'Click 1 more time to delete'}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M3 6h18" />
+                          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-[var(--foreground)] leading-relaxed whitespace-pre-wrap font-mono text-sm">
+                    {item.analysis}
+                  </p>
                 </div>
-                <p className="text-[var(--foreground)] leading-relaxed whitespace-pre-wrap font-mono text-sm">
-                  {item.analysis}
-                </p>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       )}
