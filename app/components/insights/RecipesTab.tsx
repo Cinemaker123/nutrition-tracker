@@ -159,52 +159,6 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
     setArchivedRecipes((prev) => prev.filter((r) => r.id !== id));
   }, []);
 
-  // Delete individual recipe from archive group
-  const handleDeleteIndividualRecipe = useCallback(async (archiveId: string, recipeIndex: number) => {
-    const archive = archivedRecipes.find(r => r.id === archiveId);
-    if (!archive) return;
-
-    const updatedSuggestions = archive.suggestions.filter((_, i) => i !== recipeIndex);
-    
-    // If no recipes left, delete the whole archive
-    if (updatedSuggestions.length === 0) {
-      await handleDeleteArchivedRecipe(archiveId);
-      return;
-    }
-
-    const password = localStorage.getItem('app_password');
-
-    // Update the archive with filtered suggestions
-    const response = await fetch('/api/recipes/archive', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-password': password || '',
-      },
-      body: JSON.stringify({
-        date_range: archive.date_range,
-        suggestions: updatedSuggestions,
-        based_on_dates: archive.based_on_dates,
-      }),
-    });
-
-    if (response.status === 401) {
-      setError('Invalid password');
-      throw new Error('Invalid password');
-    }
-
-    if (!response.ok) {
-      throw new Error('Failed to update');
-    }
-
-    const newArchive = await response.json();
-
-    // Remove old archive and add new one
-    setArchivedRecipes((prev) => 
-      prev.filter((r) => r.id !== archiveId).concat(newArchive.recipe)
-    );
-  }, [archivedRecipes, handleDeleteArchivedRecipe]);
-
   const { handleDeleteClick, getDeleteState } = useDeleteWithConfirm({
     onDelete: async (indexStr: string) => {
       const index = parseInt(indexStr, 10);
@@ -219,33 +173,14 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
     onDelete: handleDeleteArchivedRecipe,
   });
 
-  // Track delete clicks for individual archived recipes
-  const [recipeDeleteClicks, setRecipeDeleteClicks] = useState<Record<string, number>>({});
-
-  const handleArchivedRecipeDeleteClick = (archiveId: string, recipeIndex: number) => {
-    const key = `${archiveId}-${recipeIndex}`;
-    const clicks = (recipeDeleteClicks[key] || 0) + 1;
-    setRecipeDeleteClicks(prev => ({ ...prev, [key]: clicks }));
-
-    if (clicks >= 2) {
-      handleDeleteIndividualRecipe(archiveId, recipeIndex);
-      // Reset clicks
-      setRecipeDeleteClicks(prev => {
-        const newClicks = { ...prev };
-        delete newClicks[key];
-        return newClicks;
-      });
+  // Copy recipe to clipboard
+  const handleCopyRecipe = async (recipe: RecipeSuggestion) => {
+    const text = `${recipe.name} (${recipe.primary_macro})\n${recipe.description}`;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (err) {
+      console.error('Failed to copy:', err);
     }
-  };
-
-  const getArchivedRecipeDeleteState = (archiveId: string, recipeIndex: number) => {
-    const key = `${archiveId}-${recipeIndex}`;
-    const clicks = recipeDeleteClicks[key] || 0;
-    return {
-      clicks,
-      colorClass: clicks === 0 ? 'text-gray-400 hover:text-orange-400' : 'text-red-500 hover:text-red-600',
-      title: clicks === 0 ? 'Click to delete' : 'Click again to confirm delete',
-    };
   };
 
   // Get macro color
@@ -279,14 +214,14 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
         <div className="flex gap-3 mb-6">
           <button
             onClick={() => setShowArchive(false)}
-            className="flex-1 py-3 bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors"
+            className="analyze-btn flex-1 h-[46px] bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center justify-center"
           >
             Back to Recipes
           </button>
           <button
             onClick={loadArchive}
             disabled={isLoadingArchive}
-            className="px-4 py-3 bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors"
+            className="px-4 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center"
           >
             {isLoadingArchive ? 'Loading...' : 'Refresh Archive'}
           </button>
@@ -337,56 +272,52 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
                   </button>
                 </div>
                 <div className="space-y-3">
-                  {archive.suggestions.map((recipe, idx) => {
-                    const deleteState = getArchivedRecipeDeleteState(archive.id, idx);
-                    return (
-                      <div
-                        key={idx}
-                        className="p-3 bg-[var(--card-bg-alt)] rounded border border-[var(--border-color)]"
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h4 className="font-semibold text-[var(--foreground)] text-sm">
-                                {recipe.name}
-                              </h4>
-                              <span
-                                className={`text-xs font-medium px-2 py-0.5 rounded bg-[var(--card-bg)] ${getMacroColor(
-                                  recipe.primary_macro
-                                )}`}
-                              >
-                                {recipe.primary_macro}
-                              </span>
-                            </div>
-                            <p className="text-sm text-[var(--muted)]">
-                              {recipe.description}
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => handleArchivedRecipeDeleteClick(archive.id, idx)}
-                            className={`p-1 rounded transition-colors ml-2 ${deleteState.colorClass}`}
-                            title={deleteState.title}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="14"
-                              height="14"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
+                  {archive.suggestions.map((recipe, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 bg-[var(--card-bg-alt)] rounded border border-[var(--border-color)]"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-semibold text-[var(--foreground)] text-sm">
+                              {recipe.name}
+                            </h4>
+                            <span
+                              className={`text-xs font-medium px-2 py-0.5 rounded bg-[var(--card-bg)] ${getMacroColor(
+                                recipe.primary_macro
+                              )}`}
                             >
-                              <path d="M3 6h18" />
-                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                            </svg>
-                          </button>
+                              {recipe.primary_macro}
+                            </span>
+                          </div>
+                          <p className="text-sm text-[var(--muted)]">
+                            {recipe.description}
+                          </p>
                         </div>
+                        <button
+                          onClick={() => handleCopyRecipe(recipe)}
+                          className="p-1.5 rounded transition-colors ml-2 text-gray-400 hover:text-[#3a8fd1]"
+                          title="Copy to clipboard"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                          </svg>
+                        </button>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
               </div>
             ))
@@ -409,9 +340,16 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
             {isLoading ? 'Generating...' : 'Generate Recipe Suggestions'}
           </button>
           <button
+            onClick={handleSaveToArchive}
+            disabled={isSaving || !recipes.length}
+            className="px-4 h-[46px] bg-[#27ae60] text-white rounded-lg font-medium hover:bg-[#219653] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center"
+          >
+            {isSaving ? 'Saving...' : 'Save to Archive'}
+          </button>
+          <button
             onClick={loadArchive}
             disabled={isLoadingArchive}
-            className="px-4 py-3 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center"
+            className="px-4 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center"
           >
             {isLoadingArchive ? 'Loading...' : 'View Archive'}
           </button>
@@ -450,21 +388,21 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
         <button
           onClick={loadRecipes}
           disabled={isLoading}
-          className="flex-1 py-3 bg-[#3a8fd1] text-white rounded-lg font-medium hover:bg-[#2d7bc4] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          className="flex-1 h-[46px] bg-[#3a8fd1] text-white rounded-lg font-medium hover:bg-[#2d7bc4] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
         >
           {isLoading ? 'Generating...' : 'Generate New Recipes'}
         </button>
         <button
           onClick={handleSaveToArchive}
           disabled={isSaving || !recipes.length}
-          className="px-4 py-3 h-[46px] bg-[#27ae60] text-white rounded-lg font-medium hover:bg-[#219653] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center"
+          className="px-4 h-[46px] bg-[#27ae60] text-white rounded-lg font-medium hover:bg-[#219653] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center"
         >
           {isSaving ? 'Saving...' : 'Save to Archive'}
         </button>
         <button
           onClick={loadArchive}
           disabled={isLoadingArchive}
-          className="px-4 py-3 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center"
+          className="px-4 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center"
         >
           {isLoadingArchive ? 'Loading...' : 'View Archive'}
         </button>
