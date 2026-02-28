@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-
-const APP_PASSWORD = process.env.APP_PASSWORD;
+import { validatePassword, getPasswordFromHeader } from '@/lib/password';
 
 export async function GET(req: Request) {
   // Check password
-  const password = req.headers.get('x-password');
-  if (password !== APP_PASSWORD) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const password = getPasswordFromHeader(req);
+  const passwordError = validatePassword(password);
+  if (passwordError) {
+    return NextResponse.json({ error: passwordError.error }, { status: passwordError.status });
   }
 
   const { data, error } = await supabase
@@ -24,9 +24,10 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   // Check password
-  const password = req.headers.get('x-password');
-  if (password !== APP_PASSWORD) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const password = getPasswordFromHeader(req);
+  const passwordError = validatePassword(password);
+  if (passwordError) {
+    return NextResponse.json({ error: passwordError.error }, { status: passwordError.status });
   }
 
   const { date_range, analysis } = await req.json();

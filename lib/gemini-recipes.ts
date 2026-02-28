@@ -1,0 +1,125 @@
+import { GoogleGenAI } from "@google/genai";
+import type { DayData, RecipeSuggestion, MacroGoals } from "@/types";
+
+const SYSTEM_PROMPT = `You are a plant-based nutrition assistant.
+
+Return exactly 2-3 plant-based meal suggestions that would best address the macro gaps from the provided food log.
+
+For each suggestion return only:
+- Name
+- One sentence description
+- The primary macro it addresses
+
+No recipe, no ingredients, no steps. Plain text, no markdown, no bullet points.`;
+
+export async function generateRecipes(
+  data: DayData[],
+  goals: MacroGoals
+): Promise<RecipeSuggestion[]> {
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+  // Calculate macro gaps
+  const totals = data.reduce(
+    (acc, day) => ({
+      kcal: acc.kcal + day.totals.kcal,
+      protein_g: acc.protein_g + day.totals.protein_g,
+      carbs_g: acc.carbs_g + day.totals.carbs_g,
+      fat_g: acc.fat_g + day.totals.fat_g,
+      fiber_g: acc.fiber_g + day.totals.fiber_g,
+    }),
+    { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0, fiber_g: 0 }
+  );
+
+  const daysCount = data.length;
+  const targetTotals = {
+    kcal: goals.kcal * daysCount,
+    protein_g: goals.protein_g * daysCount,
+    carbs_g: goals.carbs_g * daysCount,
+    fat_g: goals.fat_g * daysCount,
+    fiber_g: goals.fiber_g * daysCount,
+  };
+
+  const gaps = {
+    kcal: targetTotals.kcal - totals.kcal,
+    protein_g: targetTotals.protein_g - totals.protein_g,
+    carbs_g: targetTotals.carbs_g - totals.carbs_g,
+    fat_g: targetTotals.fat_g - totals.fat_g,
+    fiber_g: targetTotals.fiber_g - totals.fiber_g,
+  };
+
+  // Format the data for the LLM
+  const formattedData = data.map((day) => ({
+    date: day.date,
+    totals: day.totals,
+    foods: day.entries.map((e) => `${e.food} (${e.amount_g}g, ${e.kcal} kcal)`),
+  }));
+
+  const prompt = `Daily goals: ${goals.kcal} kcal, ${goals.protein_g}g protein, ${goals.carbs_g}g carbs, ${goals.fat_g}g fat, ${goals.fiber_g}g fiber
+
+Macro gaps over ${daysCount} day(s):
+- Calories: ${gaps.kcal > 0 ? 'under by ' + Math.round(gaps.kcal) : 'over by ' + Math.round(Math.abs(gaps.kcal))}
+- Protein: ${gaps.protein_g > 0 ? 'under by ' + Math.round(gaps.protein_g) + 'g' : 'over by ' + Math.round(Math.abs(gaps.protein_g)) + 'g'}
+- Carbs: ${gaps.carbs_g > 0 ? 'under by ' + Math.round(gaps.carbs_g) + 'g' : 'over by ' + Math.round(Math.abs(gaps.carbs_g)) + 'g'}
+- Fat: ${gaps.fat_g > 0 ? 'under by ' + Math.round(gaps.fat_g) + 'g' : 'over by ' + Math.round(Math.abs(gaps.fat_g)) + 'g'}
+- Fiber: ${gaps.fiber_g > 0 ? 'under by ' + Math.round(gaps.fiber_g) + 'g' : 'over by ' + Math.round(Math.abs(gaps.fiber_g)) + 'g'}
+
+Food log:
+${JSON.stringify(formattedData, null, 2)}`;
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.0-flash",
+    contents: prompt,
+    config: {
+      systemInstruction: SYSTEM_PROMPT,
+      temperature: 0.3,
+      maxOutputTokens: 1000,
+    },
+  });
+
+  const text = response.text;
+  if (!text) {
+    throw new Error("Empty response from Gemini");
+  }
+
+  // Parse the response into structured suggestions
+  return parseRecipeSuggestions(text);
+}
+
+function parseRecipeSuggestions(text: string): RecipeSuggestion[] {
+  const lines = text.split('\n').filter(line => line.trim());
+  const suggestions: RecipeSuggestion[] = [];
+  
+  let currentSuggestion: Partial<RecipeSuggestion> = {};
+  
+  for (const line of lines) {
+    const trimmed = line.trim();
+    
+    // Skip empty lines
+    if (!trimmed) continue;
+    
+    // Check if line contains macro indicator
+    const macroMatch = trimmed.match(/(protein|carbs?|fat|fiber|calories?)/i);
+    
+    if (macroMatch && currentSuggestion.name && currentSuggestion.description) {
+      // This line is the macro indicator
+      const macro = macroMatch[1].toLowerCase();
+      currentSuggestion.primary_macro = macro === 'calories' || macro === 'calorie' ? 'kcal' : macro as 'protein' | 'carbs' | 'fat' | 'fiber';
+      suggestions.push(currentSuggestion as RecipeSuggestion);
+      currentSuggestion = {};
+    } else if (!currentSuggestion.name) {
+      // First line is the name
+      currentSuggestion.name = trimmed.replace(/^[-•*]\s*/, '');
+    } else if (!currentSuggestion.description) {
+      // Second line is the description
+      currentSuggestion.description = trimmed.replace(/^[-•*]\s*/, '');
+    }
+  }
+  
+  // Handle case where last suggestion doesn't have macro explicitly stated
+  if (currentSuggestion.name && currentSuggestion.description && !currentSuggestion.primary_macro) {
+    currentSuggestion.primary_macro = 'protein'; // Default fallback
+    suggestions.push(currentSuggestion as RecipeSuggestion);
+  }
+  
+  return suggestions;
+}

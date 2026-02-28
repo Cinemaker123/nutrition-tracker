@@ -1,38 +1,30 @@
 import { NextResponse } from 'next/server';
 import { analyze7Days } from '@/lib/gemini-analysis';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { supabase } from '@/lib/supabase';
+import { validatePassword, getPasswordFromHeader } from '@/lib/password';
+import { getDatesRange } from '@/lib/dates';
 
 const GOALS = {
-  kcal: 2000,
-  protein_g: 170,
-  carbs_g: 160,
-  fat_g: 65,
-  fiber_g: 30,
+  kcal: 2200,
+  protein_g: 140,
+  carbs_g: 220,
+  fat_g: 98,
+  fiber_g: 40,
 };
 
 export async function POST(req: Request) {
   // Password check
-  const password = req.headers.get('x-password');
-  if (password !== process.env.APP_PASSWORD) {
-    return new Response('Unauthorized', { status: 401 });
+  const password = getPasswordFromHeader(req);
+  const passwordError = validatePassword(password);
+  if (passwordError) {
+    return new Response(passwordError.error, { status: passwordError.status });
   }
 
   const { endDate } = await req.json();
 
   try {
     // Calculate date range (last 7 days including endDate)
-    const end = new Date(endDate + 'T00:00:00');
-    const dates: string[] = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(end);
-      d.setDate(d.getDate() - i);
-      dates.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
-    }
+    const dates = getDatesRange(endDate, 7);
 
     // Fetch data for all 7 days
     const { data: entries, error } = await supabase

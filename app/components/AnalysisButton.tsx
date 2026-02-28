@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import type { Analysis } from '@/lib/supabase';
+import type { Analysis } from '@/types';
+import { getDateRange } from '@/lib/dates';
 
 interface AnalysisButtonProps {
   selectedDate: string;
@@ -18,20 +19,6 @@ export function AnalysisButton({ selectedDate }: AnalysisButtonProps) {
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [isLoadingArchive, setIsLoadingArchive] = useState(false);
   const [deleteClicks, setDeleteClicks] = useState<Record<string, number>>({});
-
-  // Format date for display
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
-
-  // Calculate date range for display
-  const getDateRange = (endDate: string, days: number) => {
-    const end = new Date(endDate);
-    const start = new Date(end);
-    start.setDate(start.getDate() - days + 1);
-    return `${formatDate(start.toISOString().split('T')[0])} - ${formatDate(endDate)}`;
-  };
 
   const handleAnalyze = async () => {
     setIsLoading(true);
@@ -142,7 +129,7 @@ export function AnalysisButton({ selectedDate }: AnalysisButtonProps) {
     const clicks = (deleteClicks[id] || 0) + 1;
     setDeleteClicks({ ...deleteClicks, [id]: clicks });
 
-    if (clicks >= 3) {
+    if (clicks >= 2) {
       // Actually delete
       const password = localStorage.getItem('app_password');
       
@@ -174,8 +161,7 @@ export function AnalysisButton({ selectedDate }: AnalysisButtonProps) {
 
   const getTrashColor = (id: string) => {
     const clicks = deleteClicks[id] || 0;
-    if (clicks === 0) return 'text-gray-400 hover:text-gray-600';
-    if (clicks === 1) return 'text-orange-400 hover:text-orange-500';
+    if (clicks === 0) return 'text-gray-400 hover:text-orange-400';
     return 'text-red-500 hover:text-red-600';
   };
 
@@ -269,7 +255,7 @@ export function AnalysisButton({ selectedDate }: AnalysisButtonProps) {
                       <button
                         onClick={() => handleDeleteClick(item.id)}
                         className={`p-1 rounded transition-colors ${getTrashColor(item.id)}`}
-                        title={clickCount === 0 ? 'Click 3 times to delete' : clickCount === 1 ? 'Click 2 more times' : 'Click 1 more time to delete'}
+                        title={clickCount === 0 ? 'Click to delete' : 'Click again to confirm delete'}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"

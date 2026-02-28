@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-
-const APP_PASSWORD = process.env.APP_PASSWORD;
+import { validatePassword, getPasswordFromHeader } from '@/lib/password';
 
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   // Check password
-  const password = req.headers.get('x-password');
-  if (password !== APP_PASSWORD) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const password = getPasswordFromHeader(req);
+  const passwordError = validatePassword(password);
+  if (passwordError) {
+    return NextResponse.json({ error: passwordError.error }, { status: passwordError.status });
   }
 
   const { id } = await params;

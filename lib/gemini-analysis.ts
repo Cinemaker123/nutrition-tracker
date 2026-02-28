@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import type { DayData, MacroGoals } from "@/types";
 
 const SYSTEM_PROMPT = `You are a nutrition coach analyzing 7 days of food log data for someone trying to lose weight. They are tracking calories and macros with the following daily goals: calories, protein, carbs, fat, and fiber.
 The user is vegetarian and transitioning to a plant-based diet. Never suggest meat, fish, or seafood. Prioritize plant-based protein sources like legumes, tofu, tempeh, edamame, seitan, or high-protein dairy if needed.
@@ -18,29 +19,9 @@ Never shame or use negative framing around specific foods or choices.
 If the data shows no meaningful pattern or concern, say so in one sentence and stop.
 
 Tone: direct and neutral, like a coach who respects the user's time and intelligence.
-Format: plain sentences only. No bullet points, no headers, no markdown, no lists.
+Format: plain sentences only. No bullet points, no headers, no markdown, no lists.`;
 
-interface DayData {
-  date: string;
-  totals: {
-    kcal: number;
-    protein_g: number;
-    carbs_g: number;
-    fat_g: number;
-    fiber_g: number;
-  };
-  entries: {
-    food: string;
-    amount_g: number;
-    kcal: number;
-    protein_g: number;
-    carbs_g: number;
-    fat_g: number;
-    fiber_g: number;
-  }[];
-}
-
-export async function analyze7Days(data: DayData[], goals: { kcal: number; protein_g: number; carbs_g: number; fat_g: number; fiber_g: number }): Promise<string> {
+export async function analyze7Days(data: DayData[], goals: MacroGoals): Promise<string> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   
   // Format the data for the LLM
