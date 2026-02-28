@@ -148,6 +148,36 @@ export function MacroSummary({ entries }: MacroSummaryProps) {
             );
           })}
         </div>
+        
+        {/* Carb/Fat Tradeoff Advice */}
+        {(() => {
+          const carbsPct = (totals.carbs_g / GOALS.carbs_g) * 100;
+          const fatPct = (totals.fat_g / GOALS.fat_g) * 100;
+          
+          // Carbs way over, fat way under
+          if (carbsPct > 120 && fatPct < 70) {
+            return (
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  💡 <strong>Tip:</strong> Carbs high but fat low — consider swapping some carbs for fat tomorrow. Fat keeps you fuller longer on a cut.
+                </p>
+              </div>
+            );
+          }
+          
+          // Fat way over, carbs way under
+          if (fatPct > 120 && carbsPct < 70) {
+            return (
+              <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                  ⚡ <strong>Tip:</strong> Fat high but carbs low — try more carbs, less fat for better training energy tomorrow.
+                </p>
+              </div>
+            );
+          }
+          
+          return null;
+        })()}
       </div>
     </div>
   );
