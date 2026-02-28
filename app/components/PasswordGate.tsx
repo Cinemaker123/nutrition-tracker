@@ -36,9 +36,9 @@ export function PasswordGate({ children }: { children: React.ReactNode }) {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md w-full max-w-sm">
-          <h2 className="text-2xl font-bold mb-2 text-black dark:text-white">Nutrition Tracker</h2>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100  p-4">
+        <div className="bg-white  p-8 rounded-lg shadow-md w-full max-w-sm">
+          <h2 className="text-2xl font-bold mb-2 text-black">Nutrition Tracker</h2>
           <p className="text-black dark:text-gray-300 mb-6">Enter password to continue</p>
           
           <form onSubmit={handleSubmit}>
@@ -48,7 +48,7 @@ export function PasswordGate({ children }: { children: React.ReactNode }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-black dark:text-white"
+                className="w-full px-4 py-3 border border-gray-300  rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white  text-black"
                 autoFocus
               />
             </div>

@@ -53,7 +53,7 @@ function NutritionTracker() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 py-8 px-4 transition-colors">
+    <div className="min-h-screen bg-white py-8 px-4 transition-colors">
       <ThemeToggle />
       <div className="max-w-4xl mx-auto pt-8">
         {/* Date Navigation */}
@@ -66,7 +66,7 @@ function NutritionTracker() {
         {isLoading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="text-black dark:text-white mt-2">Loading...</p>
+            <p className="text-black mt-2">Loading...</p>
           </div>
         ) : (
           <>

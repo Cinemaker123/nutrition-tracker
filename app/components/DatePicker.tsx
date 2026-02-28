@@ -9,7 +9,8 @@ interface DatePickerProps {
 
 export function DatePicker({ selectedDate, onDateChange }: DatePickerProps) {
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr + 'T00:00:00');
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -18,36 +19,40 @@ export function DatePicker({ selectedDate, onDateChange }: DatePickerProps) {
     });
   };
 
+  const addDays = (dateStr: string, days: number): string => {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setDate(date.getDate() + days);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
+
   const goToPreviousDay = () => {
-    const date = new Date(selectedDate + 'T00:00:00');
-    date.setDate(date.getDate() - 1);
-    onDateChange(date.toISOString().split('T')[0]);
+    onDateChange(addDays(selectedDate, -1));
   };
 
   const goToNextDay = () => {
-    const date = new Date(selectedDate + 'T00:00:00');
-    date.setDate(date.getDate() + 1);
-    onDateChange(date.toISOString().split('T')[0]);
+    onDateChange(addDays(selectedDate, 1));
   };
 
   const goToToday = () => {
-    onDateChange(new Date().toISOString().split('T')[0]);
+    const today = new Date();
+    onDateChange(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
   };
 
-  const isToday = selectedDate === new Date().toISOString().split('T')[0];
+  const isToday = selectedDate === `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
 
   return (
     <div className="flex items-center justify-between mb-6">
       <button
         onClick={goToPreviousDay}
-        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        className="p-2 rounded-lg hover:bg-gray-100  transition-colors"
         title="Previous day"
       >
-        <ChevronLeft className="w-5 h-5 text-black dark:text-white" />
+        <ChevronLeft className="w-5 h-5 text-black" />
       </button>
       
       <div className="text-center">
-        <h2 className="text-lg font-semibold text-black dark:text-white">
+        <h2 className="text-lg font-semibold text-black">
           {formatDate(selectedDate)}
         </h2>
         {!isToday && (
@@ -62,10 +67,10 @@ export function DatePicker({ selectedDate, onDateChange }: DatePickerProps) {
       
       <button
         onClick={goToNextDay}
-        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        className="p-2 rounded-lg hover:bg-gray-100  transition-colors"
         title="Next day"
       >
-        <ChevronRight className="w-5 h-5 text-black dark:text-white" />
+        <ChevronRight className="w-5 h-5 text-black" />
       </button>
     </div>
   );
