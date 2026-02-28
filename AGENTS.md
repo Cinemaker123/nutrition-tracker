@@ -4,18 +4,106 @@ Project context and guidelines for AI agents working on this codebase.
 
 ---
 
-## Project Overview
+## Current Status (Last Updated: 2026-02-28)
+
+### ✅ Completed Features
+
+1. **Daily Food Logging** — Natural language input, Gemini parses to structured data
+2. **Macro Tracking** — Real-time progress bars for kcal, protein, carbs, fat, fiber with smart tips
+3. **7-Day AI Analysis** — Coaching insights based on last 7 days (Gemini 2.5)
+4. **Recipe Suggestions** — AI-generated meal/snack suggestions based on macro gaps (2 meals + 1 snack)
+5. **Archive System** — Save/delete analyses and recipes with visual confirmation
+6. **Dark Mode** — CSS custom properties with `.dark` class toggle, persists to localStorage
+7. **Password Protection** — Simple password gate using localStorage + API validation
+8. **Responsive UI** — Mobile-friendly grid layouts
+
+### 🏗️ Architecture
 
 **Stack:** Next.js 16 + TypeScript + Tailwind CSS v4 + Supabase + Gemini API
-**Purpose:** AI-powered nutrition tracking with food logging, macro analysis, and recipe suggestions
 
-### Current Features
-1. **Daily Food Logging** — Add foods via natural language (Gemini parses to structured data)
-2. **Macro Tracking** — Real-time progress bars for kcal, protein, carbs, fat, fiber
-3. **7-Day Analysis** — AI coaching insights based on last 7 days of data (Gemini 2.5)
-4. **Analysis Archive** — Save/delete past analyses with visual confirmation
-5. **Dark Mode** — CSS custom properties with `.dark` class toggle
-6. **Smart Messages** — Context-aware tips (protein priority, carb/fat tradeoffs)
+---
+
+## Directory Structure
+
+```
+nutrition-tracker/
+├── app/
+│   ├── api/
+│   │   ├── analyze/route.ts              # POST: Food parsing (Gemini 2.0)
+│   │   ├── analyze-7days/route.ts        # POST: 7-day coaching analysis (Gemini 2.5)
+│   │   ├── analyses/route.ts             # GET/POST: Analysis archive
+│   │   ├── analyses/[id]/route.ts        # DELETE: Single analysis
+│   │   ├── recipes/route.ts              # GET: Recipe suggestions (Gemini 2.0)
+│   │   ├── recipes/archive/route.ts      # GET/POST: Recipe archive
+│   │   └── recipes/archive/[id]/route.ts # DELETE: Single recipe archive
+│   ├── components/
+│   │   ├── DatePicker.tsx                # Date navigation
+│   │   ├── FoodInput.tsx                 # Natural language food entry
+│   │   ├── FoodTable.tsx                 # Daily food list with delete
+│   │   ├── MacroSummary.tsx              # Progress bars + smart tips
+│   │   ├── PasswordGate.tsx              # Simple password protection
+│   │   ├── ThemeProvider.tsx             # Dark mode context
+│   │   ├── ThemeToggle.tsx               # Sun/Moon toggle button
+│   │   ├── AnalysisButton.tsx            # [DEPRECATED] Use Insights page instead
+│   │   └── insights/
+│   │       ├── InsightsTabs.tsx          # Tab container (Recipes | Analysis)
+│   │       ├── RecipesTab.tsx            # Recipe suggestions + archive
+│   │       └── AnalysisTab.tsx           # 7-day analysis + archive
+│   ├── insights/
+│   │   ├── layout.tsx                    # Insights page layout
+│   │   └── page.tsx                      # Insights page with tabs
+│   ├── page.tsx                          # Main tracker page
+│   ├── layout.tsx                        # Root layout with fonts
+│   └── globals.css                       # CSS custom properties theming
+├── lib/
+│   ├── supabase.ts                       # Supabase client + type re-exports
+│   ├── gemini.ts                         # Food parsing (Gemini 2.0)
+│   ├── gemini-analysis.ts                # 7-day analysis prompt (Gemini 2.5)
+│   ├── gemini-recipes.ts                 # Recipe suggestions (Gemini 2.0)
+│   ├── dates.ts                          # Date formatting utilities
+│   └── password.ts                       # Password validation helpers
+├── types/
+│   └── index.ts                          # Shared TypeScript types
+├── hooks/
+│   └── useDeleteWithConfirm.ts           # 2-click delete confirmation hook
+└── AGENTS.md                             # This file
+```
+
+---
+
+## Database Schema (Supabase)
+
+```sql
+-- Main food entries table
+food_entries:
+  - id: uuid (primary key)
+  - food: string
+  - amount_g: number
+  - kcal: number
+  - protein_g: number
+  - carbs_g: number
+  - fat_g: number
+  - fiber_g: number
+  - entry_date: string (YYYY-MM-DD)
+  - created_at: timestamp
+
+-- Saved 7-day analyses
+analyses:
+  - id: uuid (primary key)
+  - created_at: timestamp
+  - date_range: string (e.g., "Feb 21 - Feb 27")
+  - analysis: text
+
+-- Saved recipe suggestions
+recipes:
+  - id: uuid (primary key)
+  - created_at: timestamp
+  - date_range: string (e.g., "Feb 27 - Feb 28")
+  - suggestions: jsonb -- Array of RecipeSuggestion objects
+  - based_on_dates: string[] -- Array of YYYY-MM-DD dates
+```
+
+**Note:** The `suggestions` column stores the full recipe array as JSONB, including the new `type` field ('meal' | 'snack'). No migration needed for new JSON fields.
 
 ---
 
@@ -23,232 +111,231 @@ Project context and guidelines for AI agents working on this codebase.
 
 | Feature | Model | Reason |
 |---------|-------|--------|
-| Food Entry Parsing | `gemini-2.0-flash` | Fast, reliable JSON extraction |
-| Recipe Suggestions | `gemini-2.0-flash` | Quick meal recommendations |
+| Food Entry Parsing | `gemini-2.5-flash-lite` | Fast, reliable JSON extraction |
+| Recipe Suggestions | `gemini-2.5-flash-lite` | Quick meal recommendations |
 | 7-Day Analysis | `gemini-2.5-flash` | Superior reasoning for pattern recognition |
 
-**Default:** `gemini-2.0-flash` for all new features unless complex reasoning is needed.
+**Default:** `gemini-2.5-flash-lite` for all features except 7-day analysis.
 
 ---
 
-## Architecture
+## Key Patterns
 
-### Directory Structure
-```
-app/
-├── api/
-│   ├── analyze/route.ts           # POST: Food analysis (Gemini 2.0 parsing)
-│   ├── analyze-7days/route.ts     # POST: 7-day coaching analysis (Gemini 2.5)
-│   ├── analyses/route.ts          # GET/POST: Archive management
-│   ├── analyses/[id]/route.ts     # DELETE: Single analysis deletion
-│   └── recipes/route.ts           # GET: Recipe suggestions (Gemini 2.0)
-├── components/
-│   ├── Navigation.tsx             # [PLANNED] Tab switcher (Tracker | Insights)
-│   ├── DatePicker.tsx             # Date navigation
-│   ├── FoodInput.tsx              # Natural language food entry
-│   ├── FoodTable.tsx              # Daily food list with delete
-│   ├── MacroSummary.tsx           # Progress bars + smart tips
-│   ├── PasswordGate.tsx           # Simple password protection
-│   ├── ThemeProvider.tsx          # Dark mode context
-│   ├── ThemeToggle.tsx            # Light/dark switch
-│   └── insights/                  # [PLANNED] Insights page components
-│       ├── InsightsTabs.tsx       # Tab container (Recipes | Analysis)
-│       ├── RecipeSuggestions.tsx  # Recipe display with delete
-│       ├── AnalysisPanel.tsx      # Generate + archive buttons
-│       └── ArchiveList.tsx        # Saved analyses list
-├── page.tsx                       # Main tracker page
-├── insights/                      # [PLANNED] Insights page (second page)
-│   ├── layout.tsx                 # Insights layout
-│   └── page.tsx                   # Tabbed interface
-├── layout.tsx                     # Root layout with fonts
-└── globals.css                    # CSS custom properties theming
-
-lib/
-├── supabase.ts                    # Supabase client + types
-├── gemini.ts                      # Gemini 2.0 client factory (food parsing)
-├── gemini-analysis.ts             # 7-day analysis prompt (Gemini 2.5)
-├── gemini-recipes.ts              # [PLANNED] Recipe suggestion prompt (Gemini 2.0)
-└── dates.ts                       # [PLANNED] Date formatting utilities
-
-types/
-└── index.ts                       # [PLANNED] Shared TypeScript types
-```
-
-### Key Patterns
-
-**1. Password Protection Flow**
-- Client stores password in `localStorage`
+### 1. Password Protection Flow
+- Client stores password in `localStorage` ('app_password')
 - Sent in `x-password` header on all API calls
 - Server validates against `APP_PASSWORD` env var
 - 401 response triggers re-authentication
 
-**2. Theming System**
-- Uses CSS custom properties (not Tailwind `dark:` variants)
+### 2. Theming System
+- Uses CSS custom properties (NOT Tailwind `dark:` variants)
 - `:root` = light mode, `.dark` = dark mode
 - Colors defined in `globals.css`, applied via `var(--name)`
 - Theme toggle adds/removes `.dark` class on `<html>`
+- See "CSS Custom Properties" section below
 
-**3. Database Schema**
-```sql
-food_entries:
-  - id, food, amount_g, kcal, protein_g, carbs_g, fat_g, fiber_g
-  - entry_date (YYYY-MM-DD), created_at
+### 3. Smart Messages System (MacroSummary.tsx)
 
-analyses:
-  - id, created_at, date_range, analysis
+**Time-based warnings:**
+- Protein < 50% after 4pm → "⚠️ Prioritize protein in remaining meals"
+- Protein < 40% after 8pm → "⚠️ Muscle loss risk — prioritize protein!"
+- Calories < 50% after 10pm → "⚠️ You're under-fueled for the day"
 
-recipes:
-  - id, created_at, date_range, suggestions
-```
+**Macro tradeoff tips (dismissible):**
+- Carbs > 120% + Fat < 70% → Swap carbs for fat (satiety)
+- Fat > 120% + Carbs < 70% → Swap fat for carbs (energy)
+- Protein < 60% + Carbs > 100% → Swap carbs for protein (muscle protection)
+- Protein < 60% + Fat > 100% → Reduce fat, add lean protein
+- Protein ≥ 90% → "✅ Well done! Protein on track"
 
-**4. Gemini Integration**
-- `gemini-2.0-flash` for 7-day analysis (reasoning required)
-- `gemini-2.0-flash-lite` for recipe creation & data parsing (default model)
-- System prompts define output format strictly
-- JSON mode for structured data (food parsing)
-- Plain text for coaching/recipe suggestions
+### 4. 2-Click Delete Pattern
+- Uses `useDeleteWithConfirm` hook
+- First click: turns orange/red, shows "Click again to confirm"
+- Second click: executes delete
+- Prevents accidental deletions
 
----
-
-## Refactoring Plan: Insights Page with Tabs
-
-### Goal
-Create a second page ("Insights") with tabs for Recipes and 7-Day Analysis. Recipes loads automatically. Analysis requires button press.
-
-### New Page Structure
-```
-app/
-├── insights/
-│   ├── layout.tsx                 # Insights layout (PasswordGate, ThemeProvider, back button)
-│   ├── page.tsx                   # Main insights page with tabs
-│   └── components/
-│       ├── InsightsTabs.tsx       # Tab switcher (Recipes [blue] | Analysis [dark grey])
-│       ├── RecipesTab.tsx         # Auto-loads recipes on mount
-│       ├── AnalysisTab.tsx        # Buttons for generate + archive
-│       ├── RecipeCard.tsx         # Single recipe display with delete
-│       ├── AnalysisResult.tsx     # Analysis display
-│       └── ArchiveList.tsx        # Saved analyses with delete
-```
-
-### Navigation Flow
-1. Main page (`/`) = Daily tracker (unchanged)
-2. Add "Insights" button/link on main page
-3. Insights page (`/insights`) shows tabs:
-   - **Recipes** (blue, left) — Loads automatically
-   - **Analysis** (dark grey, right) — Shows generate + archive buttons
-4. Back button to return to tracker
-
-### Phase 1: Extract Shared Components
-
-**1.1 Create Types File**
-- `types/index.ts` — FoodEntry, Analysis, RecipeSuggestion, Goal types
-
-**1.2 Extract Utilities**
-- `lib/dates.ts` — Date formatting (from AnalysisButton, DatePicker)
-- `lib/password.ts` — Password header helper
-
-**1.3 Move Analysis Components**
-- Extract archive list to reusable `ArchiveList.tsx`
-- Extract delete logic to hook `useDeleteWithConfirm()`
-
-### Phase 2: Recipes Feature
-
-**2.1 Backend**
-```typescript
-// lib/gemini-recipes.ts
-const SYSTEM_PROMPT = `You are a plant-based nutrition assistant.
-
-Return exactly 2-3 plant-based meal suggestions that would best address 
-the macro gaps from the provided food log.
-
-For each suggestion return only:
-- Name
-- One sentence description
-- The primary macro it addresses
-
-No recipe, no ingredients, no steps. Plain text, no markdown, no bullet points.`;
-
-// Fetch yesterday + today from Supabase
-// Calculate gaps vs goals
-// Call Gemini 2.0 with prompt
-```
-
-**2.2 API Route**
-- `app/api/recipes/route.ts` — GET endpoint
-  - Query: `?endDate=YYYY-MM-DD` (uses today as default)
-  - Returns: `{ suggestions: RecipeSuggestion[] }`
-
-**2.3 Frontend**
-- `RecipesTab.tsx` — Loads on mount, displays cards
-- `RecipeCard.tsx` — Name, description, macro badge, delete button
-- Delete works same as analyses: grey → red, 2 clicks
-
-### Phase 3: Insights Page
-
-**3.1 Tab Design**
-```
-[ Recipes (blue) ] [ Analysis (dark grey) ]
-```
-- Recipes tab: Blue background when active, loads automatically
-- Analysis tab: Dark grey when active, shows buttons
-- Inactive tabs: Lighter/neutral background
-
-**3.2 Analysis Tab Contents**
-- "Generate New Analysis" button (triggers 7-day analysis)
-- "View Archive" button (toggles archive list)
-- Current analysis result (if generated)
-- Archive list (if toggled)
-
-**3.3 Recipes Tab Contents**
-- Auto-load on mount (loading spinner)
-- List of recipe cards
-- Each card: Delete button (same 2-click confirm)
-- Refresh button to regenerate
-
-### Phase 4: Navigation Integration
-
-**4.1 Main Page Addition**
-- Add "Insights" button to `page.tsx`
-- Position: Below AnalysisButton or in header area
-- Style: Distinct from primary actions
-
-**4.2 Insights Layout**
-- Back button to return to main tracker
-- Same ThemeProvider, PasswordGate wrappers
-- Consistent styling with main page
+### 5. Recipe Emoji Mapping
+- Snack: 🧁
+- Protein: 💪
+- Carbs: 🌾
+- Fat: 🥑
+- Fiber: 🥦
+- Calories: 🔥
 
 ---
 
-## Design Reference
+## CSS Custom Properties
 
-### Color Palette (from macros_today.html)
-
-| Macro | Emoji | Bar Color | Text Color |
-|-------|-------|-----------|------------|
-| Calories | 🔥 | #e07b39 | #e07b39 |
-| Protein | 💪 | #3a8fd1 | #3a8fd1 |
-| Carbs | 🍞 | #d4a017 | #d4a017 |
-| Fat | 🫒 | #c0392b | #c0392b |
-| Fiber | 🌾 | #27ae60 | #27ae60 |
-
-### Dark Mode Colors
+### Color Variables (globals.css)
 
 ```css
 /* Light Mode */
 --background: #f0f0f0;
+--foreground: #1a1a1a;
 --card-bg: #ffffff;
+--card-bg-alt: #f5f5f5;
+--input-bg: #ffffff;
 --border-color: #d0d0d0;
+--hover-bg: #e8e8e8;
+--muted: #666;
 
-/* Dark Mode */
+/* Macros */
+--kcal: #e07b39;   /* orange */
+--prot: #3a8fd1;   /* blue */
+--carb: #d4a017;   /* gold */
+--fat:  #c0392b;   /* red */
+--fiber:#27ae60;   /* green */
+
+/* Dark Mode (auto-applied via .dark class) */
 --background: #0d0d0d;
+--foreground: #e8e8e8;
 --card-bg: #151515;
+--card-bg-alt: #1c1c1c;
+--input-bg: #1c1c1c;
 --border-color: #2a2a2a;
+--hover-bg: #1c1c1c;
+--muted: #888;
+
+/* Dark mode macros (brighter for visibility) */
+--kcal: #ff6b35;
+--prot: #4dabf7;
+--carb: #ffd43b;
+--fat:  #f06595;
+--fiber:#69db7c;
 ```
 
-### Tab Colors (Insights Page)
-- **Recipes (active):** Blue background (#3a8fd1 or similar)
-- **Analysis (active):** Dark grey background (#2c2c2c or similar)
-- **Inactive:** Neutral/light background
+### Important CSS Rules
+
+- **Never use Tailwind `dark:` variants** — always use CSS custom properties
+- Tip boxes have explicit dark mode overrides in globals.css
+- `.analyze-btn` and `.analysis-tab-active` have special dark mode handling
+
+---
+
+## Component Colors Reference
+
+| Element | Light Mode | Dark Mode |
+|---------|------------|-----------|
+| Background | `#f0f0f0` | `#0d0d0d` |
+| Card BG | `#ffffff` | `#151515` |
+| Text | `#1a1a1a` | `#e8e8e8` |
+| Borders | `#d0d0d0` | `#2a2a2a` |
+| Muted Text | `#666` | `#888` |
+
+### Button Colors
+- Primary (Generate): `bg-gray-800` (light) / `#e8e8e8` (dark)
+- Save/Confirm: `#27ae60` (green)
+- Archive/View: `#8B6914` (brown)
+- Recipes Tab Active: `#3a8fd1` (blue)
+- Analysis Tab Active: `#1f2937` (gray-800, light) / `#e8e8e8` (dark)
+
+---
+
+## Types Reference (types/index.ts)
+
+```typescript
+interface FoodEntry {
+  id: string;
+  food: string;
+  amount_g: number;
+  kcal: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  fiber_g: number;
+  entry_date: string;
+  created_at: string;
+}
+
+interface RecipeSuggestion {
+  name: string;
+  description: string;
+  primary_macro: 'protein' | 'carbs' | 'fat' | 'fiber' | 'kcal';
+  type?: 'meal' | 'snack';  // NEW: distinguishes meals from snacks
+}
+
+interface Analysis {
+  id: string;
+  created_at: string;
+  date_range: string;
+  analysis: string;
+}
+
+interface MacroGoals {
+  kcal: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  fiber_g: number;
+}
+
+interface DayData {
+  date: string;
+  totals: { kcal, protein_g, carbs_g, fat_g, fiber_g };
+  entries: DayEntry[];
+}
+```
+
+---
+
+## Environment Variables
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+GEMINI_API_KEY=
+APP_PASSWORD=
+```
+
+---
+
+## Known Issues / Technical Debt
+
+### 1. Goal Values Duplicated
+Goals are hardcoded in multiple places:
+- `MacroSummary.tsx` (line 6-12) — for display/progress bars
+- `app/api/analyze-7days/route.ts` (line 7-13) — for 7-day analysis
+- `app/api/recipes/route.ts` (line 8-14) — for recipe suggestions
+
+**Refactor needed:** Centralize goals in a config file or database.
+
+### 2. ✅ FIXED: Recipe Goals != MacroSummary Goals
+~~Recipes API uses 2200 kcal, MacroSummary uses 2000 kcal.~~ Fixed: Both now use 2000 kcal with matching macro goals.
+
+### 3. ✅ FIXED: Console Logging in ThemeProvider
+~~Debug logs should be removed.~~ Fixed: All debug logs removed from ThemeProvider and ThemeToggle.
+
+### 4. Password Stored in localStorage
+Not secure — acceptable for personal use. No change needed.
+
+### 5. ✅ FIXED: AnalysisButton Component Deprecated
+~~`app/components/AnalysisButton.tsx` still exists but is no longer used.~~ Fixed: Component removed.
+
+### 6. Unused Variables
+Some components have unused error variables — acceptable for personal use. Run `npm run lint` periodically if desired.
+
+---
+
+## Potential Refactorings
+
+### High Priority
+1. **Centralize Goals** — Create `lib/goals.ts` to share goals between MacroSummary and API routes (currently duplicated)
+
+### Medium Priority
+2. **Extract API Route Logic** — Move business logic from API routes to lib functions for better testability
+3. **Add Error Boundaries** — Wrap components for better error handling
+4. **Add Loading States** — Some interactions lack visual feedback
+5. **Supabase RLS** — Add Row Level Security policies if ever going to production
+
+### Low Priority
+6. **Unit Tests** — Add Jest/Vitest tests for lib functions
+7. **E2E Tests** — Add Playwright tests for critical flows
+8. **PWA Support** — Add service worker for offline use
+9. **Food Database** — Cache common foods to reduce Gemini API calls
+
+### ✅ Completed
+- ~~Remove Debug Logs~~ — ThemeProvider and ThemeToggle cleaned up
+- ~~Delete Deprecated Components~~ — AnalysisButton removed
 
 ---
 
@@ -256,17 +343,12 @@ No recipe, no ingredients, no steps. Plain text, no markdown, no bullet points.`
 
 ### Styling
 - Use CSS custom properties: `bg-[var(--card-bg)]`, `text-[var(--foreground)]`
-- Never use Tailwind `dark:` variants
+- **Never use Tailwind `dark:` variants** — use CSS custom properties instead
 - Buttons: Rounded corners (`rounded-lg`), hover transitions
-- Colors:
-  - Primary actions: `bg-gray-800` (light) / `#e8e8e8` (dark) via `.analyze-btn`
-  - Archive: `#8B6914` (brown)
-  - Destructive: Red progression (grey → red, 2 clicks)
-  - Recipes tab: Blue accent
-  - Analysis tab: Dark grey
+- Colors: See "Component Colors Reference" above
 
 ### Components
-- Use functional components with hooks
+- Functional components with hooks
 - Props interface at top of file
 - Loading states: `isLoading`, disabled buttons, spinners
 - Error handling: Set error state, display below buttons
@@ -279,44 +361,12 @@ No recipe, no ingredients, no steps. Plain text, no markdown, no bullet points.`
 ### Gemini Integration
 - Export async functions from `lib/gemini-*.ts`
 - System prompt + user prompt pattern
-- Temperature 0.3 for consistency
 - Handle empty responses with errors
-- **Use `gemini-2.0-flash` by default**, 2.5 only for complex reasoning (7-day analysis)
+- **Use `gemini-2.5-flash-lite` by default**, 2.5 only for 7-day analysis
 
 ---
 
-## Smart Messages Reference
-
-### Context-Aware Tips (Phase 3 Features)
-
-**Calorie Messages:**
-- Under 50% by 6pm → "You're under-fueled for the day, don't skip meals to cut"
-- Over target → "Maintenance calories hit, no deficit today"
-- On track → "On track for your goal"
-
-**Protein Messages (Priority for cuts):**
-- Under 1g/kg by end of day → "Muscle loss risk — hit protein tomorrow even if it costs calories"
-- Under 50% by midday → "⚠️ Prioritize protein in remaining meals"
-- On track → Nothing (silent success)
-
-**Carb/Fat Tradeoff:**
-- Carbs way over, fat way under → "Consider swapping some carbs for fat tomorrow — easier to stay full"
-- Carbs under, fat over → "Try more carbs, less fat for better energy"
-
----
-
-## Environment Variables
-
-```
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-GEMINI_API_KEY=
-APP_PASSWORD=
-```
-
----
-
-## Git Convention Reminder
+## Git Convention
 
 ```bash
 git config user.name "Kimi"
@@ -329,30 +379,23 @@ git config user.email "54896623+Cinemaker123@users.noreply.github.com"
 
 ---
 
-## Development Checklist
+## Quick Reference: Adding a New Feature
 
-### Before Starting Refactor
-- [ ] Review current `page.tsx` structure
-- [ ] Plan component extraction
-- [ ] Create types file
-
-### During Implementation
-- [ ] Test tab switching
-- [ ] Ensure recipes auto-load
-- [ ] Verify analysis buttons work
-- [ ] Test delete on both tabs
-- [ ] Ensure password gate works
-- [ ] Verify theme persists
-
-### After Completion
-- [ ] Update this AGENTS.md with any changes
-- [ ] Commit with clear message about insights page
+1. **Update types** in `types/index.ts`
+2. **Add lib function** if using Gemini (e.g., `lib/gemini-feature.ts`)
+3. **Create API route** in `app/api/feature/route.ts`
+4. **Build component** in `app/components/` or `app/components/insights/`
+5. **Add to page** where needed
+6. **Update AGENTS.md** with new feature documentation
+7. **Test both themes** (light and dark mode)
 
 ---
 
-## Current Status
+## Notes for Future Agents
 
-**Last Updated:** 2026-02-27
-**Active Feature:** Insights page with Recipes + Analysis tabs
-**Model Policy:** 2.0 default, 2.5 for 7-day analysis only
-**Next Steps:** Phase 1 — Extract shared components and types
+- The user prefers **minimal changes** — don't over-engineer
+- **Always test dark mode** when changing UI components
+- The app is for **personal use** — prioritize features over perfection
+- **Macros are critical** — protein is especially important for this user
+- **Vegetarian/plant-based diet** — never suggest meat in AI prompts
+- **Emoji placement matters** — recipes show emoji BEFORE name

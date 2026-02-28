@@ -5,11 +5,11 @@ import { validatePassword, getPasswordFromHeader } from '@/lib/password';
 import { getDatesRange } from '@/lib/dates';
 
 const GOALS = {
-  kcal: 2200,
-  protein_g: 140,
-  carbs_g: 220,
-  fat_g: 98,
-  fiber_g: 40,
+  kcal: 2000,
+  protein_g: 170,
+  carbs_g: 160,
+  fat_g: 65,
+  fiber_g: 30,
 };
 
 export async function POST(req: Request) {
