@@ -73,8 +73,7 @@ ${JSON.stringify(formattedData, null, 2)}`;
     contents: prompt,
     config: {
       systemInstruction: SYSTEM_PROMPT,
-      temperature: 0.3,
-      maxOutputTokens: 1000,
+      responseMimeType: "application/json",
     },
   });
 
@@ -82,34 +81,13 @@ ${JSON.stringify(formattedData, null, 2)}`;
   if (!text) {
     throw new Error("Empty response from Gemini");
   }
-
-  // Parse the JSON response
-  return parseRecipeSuggestions(text);
-}
-
-function parseRecipeSuggestions(text: string): RecipeSuggestion[] {
-  try {
-    // Extract JSON from response (in case there's any extra text)
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      throw new Error("No JSON array found in response");
-    }
-    
-    const suggestions = JSON.parse(jsonMatch[0]) as RecipeSuggestion[];
-    
-    // Validate the structure
-    if (!Array.isArray(suggestions)) {
-      throw new Error("Response is not an array");
-    }
-    
-    return suggestions.map((s, i) => ({
-      name: s.name || `Suggestion ${i + 1}`,
-      description: s.description || "No description provided",
-      primary_macro: s.primary_macro || "protein",
-    }));
-  } catch (error) {
-    console.error("Failed to parse recipe suggestions:", error);
-    console.error("Raw response:", text);
-    throw new Error("Failed to parse recipe suggestions from AI response");
-  }
+  
+  const suggestions = JSON.parse(text) as RecipeSuggestion[];
+  
+  // Validate and normalize
+  return suggestions.map((s, i) => ({
+    name: s.name || `Suggestion ${i + 1}`,
+    description: s.description || "No description provided",
+    primary_macro: s.primary_macro || "protein",
+  }));
 }

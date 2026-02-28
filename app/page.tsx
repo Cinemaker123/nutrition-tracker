@@ -10,7 +10,6 @@ import { FoodInput } from './components/FoodInput';
 import { FoodTable } from './components/FoodTable';
 import { MacroSummary } from './components/MacroSummary';
 import { supabase, FoodEntry } from '@/lib/supabase';
-import { AnalysisButton } from './components/AnalysisButton';
 import { Lightbulb } from 'lucide-react';
 
 function NutritionTracker() {
@@ -58,18 +57,8 @@ function NutritionTracker() {
 
   return (
     <div className="min-h-screen bg-white py-8 px-4 transition-colors">
-      {/* Header */}
-      <div className="flex items-center justify-end gap-3 mb-4">
-        <button
-          onClick={() => router.push('/insights')}
-          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-[var(--foreground)] bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg hover:bg-[var(--hover-bg)] transition-colors"
-        >
-          <Lightbulb className="w-4 h-4" />
-          Insights
-        </button>
-        <ThemeToggle />
-      </div>
-      <div className="max-w-4xl mx-auto pt-4">
+      <ThemeToggle />
+      <div className="max-w-4xl mx-auto pt-8">
         {/* Date Navigation */}
         <DatePicker selectedDate={selectedDate} onDateChange={setSelectedDate} />
 
@@ -90,8 +79,16 @@ function NutritionTracker() {
             {/* Food Table */}
             <FoodTable entries={entries} onDelete={handleDelete} />
 
-            {/* 7-Day Analysis */}
-            <AnalysisButton selectedDate={selectedDate} />
+            {/* Insights Link */}
+            <div className="mt-8 pt-8 border-t border-[var(--border-color)]">
+              <button
+                onClick={() => router.push('/insights')}
+                className="w-full py-4 bg-[#3a8fd1] text-white rounded-lg font-medium hover:bg-[#2d7bc4] transition-colors flex items-center justify-center gap-2"
+              >
+                <Lightbulb className="w-5 h-5" />
+                Insights — Recipes & Analysis
+              </button>
+            </div>
           </>
         )}
       </div>

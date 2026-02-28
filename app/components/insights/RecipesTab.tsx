@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import type { RecipeSuggestion } from '@/types';
 import { useDeleteWithConfirm } from '@/hooks/useDeleteWithConfirm';
 import { formatDate, getToday, getYesterday } from '@/lib/dates';
@@ -11,9 +11,10 @@ interface RecipesTabProps {
 
 export function RecipesTab({ initialEndDate }: RecipesTabProps) {
   const [recipes, setRecipes] = useState<RecipeSuggestion[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [endDate, setEndDate] = useState(initialEndDate || getToday());
+  const [hasGenerated, setHasGenerated] = useState(false);
+  const [endDate] = useState(initialEndDate || getToday());
 
   const loadRecipes = useCallback(async () => {
     setIsLoading(true);
@@ -37,6 +38,7 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
 
       const data = await response.json();
       setRecipes(data.suggestions || []);
+      setHasGenerated(true);
     } catch (err) {
       setError('Failed to load recipes');
     } finally {
@@ -44,18 +46,11 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
     }
   }, [endDate]);
 
-  // Auto-load on mount
-  useEffect(() => {
-    loadRecipes();
-  }, [loadRecipes]);
-
   const handleDeleteRecipe = useCallback(async (index: number) => {
-    // Since recipes are not persisted to DB (generated fresh each time),
-    // we just remove from local state
     setRecipes((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
-  const { handleDeleteClick, getDeleteState, resetClicks } = useDeleteWithConfirm({
+  const { handleDeleteClick, getDeleteState } = useDeleteWithConfirm({
     onDelete: async (indexStr: string) => {
       const index = parseInt(indexStr, 10);
       await handleDeleteRecipe(index);
@@ -86,6 +81,35 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
   const yesterday = formatDate(getYesterday(endDate));
   const today = formatDate(endDate);
 
+  // Show initial state with generate button
+  if (!hasGenerated) {
+    return (
+      <div>
+        <div className="mb-4">
+          <h3 className="text-sm font-semibold text-[var(--muted)] uppercase tracking-wider">
+            Recipe Suggestions
+          </h3>
+          <p className="text-xs text-[var(--muted)] mt-1">
+            Based on {yesterday} - {today}
+          </p>
+        </div>
+
+        <button
+          onClick={loadRecipes}
+          disabled={isLoading}
+          className="w-full py-4 bg-[#3a8fd1] text-white rounded-lg font-medium hover:bg-[#2d7bc4] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+        >
+          {isLoading ? 'Generating...' : 'Generate Recipe Suggestions'}
+        </button>
+
+        {error && (
+          <p className="text-red-500 text-sm mt-3 text-center">{error}</p>
+        )}
+      </div>
+    );
+  }
+
+  // Loading state
   if (isLoading) {
     return (
       <div className="text-center py-12">
@@ -107,13 +131,15 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
             Based on {yesterday} - {today}
           </p>
         </div>
-        <button
-          onClick={loadRecipes}
-          disabled={isLoading}
-          className="text-xs px-3 py-1.5 bg-[var(--card-bg)] border border-[var(--border-color)] rounded hover:bg-[var(--hover-bg)] disabled:opacity-50 transition-colors"
-        >
-          Refresh
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={loadRecipes}
+            disabled={isLoading}
+            className="text-xs px-3 py-1.5 bg-[var(--card-bg)] border border-[var(--border-color)] rounded hover:bg-[var(--hover-bg)] disabled:opacity-50 transition-colors"
+          >
+            Refresh
+          </button>
+        </div>
       </div>
 
       {error && (
