@@ -110,7 +110,7 @@ export function MacroSummary({ entries }: MacroSummaryProps) {
               className={`bg-white rounded-lg shadow-sm p-4 text-center ${isLast ? 'col-span-2 sm:col-span-1' : ''}`}
             >
               <div 
-                className="text-2xl font-bold font-syne" 
+                className="text-2xl font-bold" 
                 style={{ color: `var(${config.cssVar})` }}
               >
                 {Math.round(value)}{unit}
