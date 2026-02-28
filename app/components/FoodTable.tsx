@@ -20,11 +20,11 @@ export function FoodTable({ entries, onDelete }: FoodTableProps) {
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden mb-6">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-gray-800 text-white">
+            <tr className="bg-gray-800 dark:bg-gray-950 text-white">
               <th className="px-4 py-3 text-left text-sm font-medium">Food</th>
               <th className="px-4 py-3 text-right text-sm font-medium">Amount (g)</th>
               <th className="px-4 py-3 text-right text-sm font-medium">kcal</th>
@@ -37,14 +37,14 @@ export function FoodTable({ entries, onDelete }: FoodTableProps) {
           </thead>
           <tbody>
             {entries.map((entry) => (
-              <tr key={entry.id} className="border-b border-gray-100 hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm text-black">{entry.food}</td>
-                <td className="px-4 py-3 text-sm text-right text-black">{entry.amount_g}g</td>
-                <td className="px-4 py-3 text-sm text-right text-black">{entry.kcal}</td>
-                <td className="px-4 py-3 text-sm text-right text-black">{entry.protein_g}g</td>
-                <td className="px-4 py-3 text-sm text-right text-black">{entry.carbs_g}g</td>
-                <td className="px-4 py-3 text-sm text-right text-black">{entry.fat_g}g</td>
-                <td className="px-4 py-3 text-sm text-right text-black">{entry.fiber_g}g</td>
+              <tr key={entry.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td className="px-4 py-3 text-sm text-black dark:text-white">{entry.food}</td>
+                <td className="px-4 py-3 text-sm text-right text-black dark:text-white">{entry.amount_g}g</td>
+                <td className="px-4 py-3 text-sm text-right text-black dark:text-white">{entry.kcal}</td>
+                <td className="px-4 py-3 text-sm text-right text-black dark:text-white">{entry.protein_g}g</td>
+                <td className="px-4 py-3 text-sm text-right text-black dark:text-white">{entry.carbs_g}g</td>
+                <td className="px-4 py-3 text-sm text-right text-black dark:text-white">{entry.fat_g}g</td>
+                <td className="px-4 py-3 text-sm text-right text-black dark:text-white">{entry.fiber_g}g</td>
                 <td className="px-4 py-3 text-center">
                   <button
                     onClick={() => onDelete(entry.id)}
@@ -58,19 +58,19 @@ export function FoodTable({ entries, onDelete }: FoodTableProps) {
             ))}
             {entries.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-black">
+                <td colSpan={8} className="px-4 py-8 text-center text-black dark:text-white">
                   No entries yet. Add your first meal above!
                 </td>
               </tr>
             )}
             {entries.length > 0 && (
-              <tr className="bg-gray-100 font-semibold">
-                <td className="px-4 py-3 text-sm text-black" colSpan={2}>Total</td>
-                <td className="px-4 py-3 text-sm text-right text-black">{totals.kcal}</td>
-                <td className="px-4 py-3 text-sm text-right text-black">{totals.protein_g.toFixed(1)}g</td>
-                <td className="px-4 py-3 text-sm text-right text-black">{totals.carbs_g.toFixed(1)}g</td>
-                <td className="px-4 py-3 text-sm text-right text-black">{totals.fat_g.toFixed(1)}g</td>
-                <td className="px-4 py-3 text-sm text-right text-black">{totals.fiber_g.toFixed(1)}g</td>
+              <tr className="bg-gray-100 dark:bg-gray-700 font-semibold">
+                <td className="px-4 py-3 text-sm text-black dark:text-white" colSpan={2}>Total</td>
+                <td className="px-4 py-3 text-sm text-right text-black dark:text-white">{totals.kcal}</td>
+                <td className="px-4 py-3 text-sm text-right text-black dark:text-white">{totals.protein_g.toFixed(1)}g</td>
+                <td className="px-4 py-3 text-sm text-right text-black dark:text-white">{totals.carbs_g.toFixed(1)}g</td>
+                <td className="px-4 py-3 text-sm text-right text-black dark:text-white">{totals.fat_g.toFixed(1)}g</td>
+                <td className="px-4 py-3 text-sm text-right text-black dark:text-white">{totals.fiber_g.toFixed(1)}g</td>
                 <td></td>
               </tr>
             )}

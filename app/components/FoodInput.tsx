@@ -54,7 +54,7 @@ export function FoodInput({ onFoodAdded, selectedDate }: FoodInputProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6">
       <form onSubmit={handleSubmit}>
         <div className="flex gap-2">
           <input
@@ -62,7 +62,7 @@ export function FoodInput({ onFoodAdded, selectedDate }: FoodInputProps) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="What did you eat? (e.g., 2 eggs and toast)"
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-gray-500"
+            className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
             disabled={isLoading}
           />
           <button
