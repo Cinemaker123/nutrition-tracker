@@ -102,7 +102,8 @@ recipes:
 ```
 
 **4. Gemini Integration**
-- `gemini-2.0-flash` for everything
+- `gemini-2.0-flash` for 7-day analysis (reasoning required)
+- `gemini-2.0-flash-lite` for recipe creation & data parsing (default model)
 - System prompts define output format strictly
 - JSON mode for structured data (food parsing)
 - Plain text for coaching/recipe suggestions

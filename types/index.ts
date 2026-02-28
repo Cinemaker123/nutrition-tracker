@@ -24,6 +24,7 @@ export interface RecipeSuggestion {
   name: string;
   description: string;
   primary_macro: 'protein' | 'carbs' | 'fat' | 'fiber' | 'kcal';
+  type?: 'meal' | 'snack';
 }
 
 export interface MacroGoals {

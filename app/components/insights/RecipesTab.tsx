@@ -221,24 +221,28 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
     }
   };
 
-  // Get macro color
-  const getMacroColor = (macro: string) => {
-    switch (macro.toLowerCase()) {
+  // Get emoji based on recipe type and primary macro
+  const getEmoji = (recipe: RecipeSuggestion) => {
+    // If it's a snack, show snack emoji
+    if (recipe.type === 'snack') return '🧁';
+
+    // Otherwise use primary_macro
+    switch (recipe.primary_macro.toLowerCase()) {
       case 'protein':
-        return 'text-[#3a8fd1]';
+        return '💪';
       case 'carbs':
       case 'carbohydrates':
-        return 'text-[#d4a017]';
+        return '🌾';
       case 'fat':
       case 'fats':
-        return 'text-[#c0392b]';
+        return '🥑';
       case 'fiber':
-        return 'text-[#27ae60]';
+        return '🥦';
       case 'calories':
       case 'kcal':
-        return 'text-[#e07b39]';
+        return '🔥';
       default:
-        return 'text-[var(--foreground)]';
+        return '💪';
     }
   };
 
@@ -314,16 +318,12 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
+                            <span className="text-base" title={recipe.type === 'snack' ? 'Snack' : recipe.primary_macro}>
+                              {getEmoji(recipe)}
+                            </span>
                             <h4 className="font-semibold text-[var(--foreground)] text-sm">
                               {recipe.name}
                             </h4>
-                            <span
-                              className={`text-xs font-medium px-2 py-0.5 rounded bg-[var(--card-bg)] ${getMacroColor(
-                                recipe.primary_macro
-                              )}`}
-                            >
-                              {recipe.primary_macro}
-                            </span>
                           </div>
                           <p className="text-sm text-[var(--muted)]">
                             {recipe.description}
@@ -480,16 +480,12 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
+                      <span className="text-lg" title={recipe.type === 'snack' ? 'Snack' : recipe.primary_macro}>
+                        {getEmoji(recipe)}
+                      </span>
                       <h4 className="font-semibold text-[var(--foreground)]">
                         {recipe.name}
                       </h4>
-                      <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded bg-[var(--card-bg-alt)] ${getMacroColor(
-                          recipe.primary_macro
-                        )}`}
-                      >
-                        {recipe.primary_macro}
-                      </span>
                     </div>
                     <p className="text-sm text-[var(--muted)] leading-relaxed">
                       {recipe.description}

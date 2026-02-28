@@ -1,16 +1,16 @@
 import { GoogleGenAI } from "@google/genai";
 import type { DayData, RecipeSuggestion, MacroGoals } from "@/types";
 
-const SYSTEM_PROMPT = `You are a plant-based nutrition assistant.
-
-Return exactly 2-3 plant-based meal suggestions that would best address the macro gaps from the provided food log.
+const SYSTEM_PROMPT = `Return exactly 3 suggestions (2 meals + 1 snack) that would best address the macro gaps from the provided food log. Keep the snack simple and realistic — think a piece of fruit, yogurt with grains, or toast with cheese.
+The user is vegetarian, so all suggestions should be plant-based and not include meat, poultry, or fish. Milk free alternatives are fine (e.g. almond milk, soy yogurt).
 
 Respond ONLY with a JSON array, no markdown, no explanation:
 [
   {
     "name": string,
     "description": string (one sentence),
-    "primary_macro": string (e.g. "protein")
+    "primary_macro": string (e.g. "protein"),
+    "type": "meal" | "snack"
   }
 ]`;
 
@@ -89,5 +89,6 @@ ${JSON.stringify(formattedData, null, 2)}`;
     name: s.name || `Suggestion ${i + 1}`,
     description: s.description || "No description provided",
     primary_macro: s.primary_macro || "protein",
+    type: s.type || "meal",
   }));
 }
