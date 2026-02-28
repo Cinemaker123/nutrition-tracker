@@ -17,6 +17,15 @@ const syne = Syne({
 export const metadata: Metadata = {
   title: "Nutrition Tracker",
   description: "Track your daily nutrition with AI",
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    apple: [
+      { url: '/icon-192.png', sizes: '192x192' },
+    ],
+  },
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
