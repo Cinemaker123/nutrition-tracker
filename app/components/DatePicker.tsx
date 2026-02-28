@@ -43,7 +43,7 @@ export function DatePicker({ selectedDate, onDateChange }: DatePickerProps) {
         className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
         title="Previous day"
       >
-        <ChevronLeft className="w-5 h-5" />
+        <ChevronLeft className="w-5 h-5 text-black" />
       </button>
       
       <div className="text-center">
@@ -53,7 +53,7 @@ export function DatePicker({ selectedDate, onDateChange }: DatePickerProps) {
         {!isToday && (
           <button
             onClick={goToToday}
-            className="text-sm text-blue-500 hover:text-blue-600 mt-1"
+            className="text-sm text-blue-600 hover:text-blue-800 mt-1"
           >
             Go to today
           </button>
@@ -65,7 +65,7 @@ export function DatePicker({ selectedDate, onDateChange }: DatePickerProps) {
         className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
         title="Next day"
       >
-        <ChevronRight className="w-5 h-5" />
+        <ChevronRight className="w-5 h-5 text-black" />
       </button>
     </div>
   );

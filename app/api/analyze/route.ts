@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createKimiClient, SYSTEM_PROMPT } from '@/lib/kimi';
+import { parseMacros } from '@/lib/gemini';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -8,6 +8,14 @@ const supabase = createClient(
 );
 
 export async function POST(req: Request) {
+  // Check env vars
+  if (!process.env.GEMINI_API_KEY) {
+    return NextResponse.json(
+      { error: 'GEMINI_API_KEY not configured' },
+      { status: 500 }
+    );
+  }
+
   // Password check
   const password = req.headers.get('x-password');
   if (password !== process.env.APP_PASSWORD) {
@@ -24,61 +32,42 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Call Kimi API with JSON Mode
-    const kimi = createKimiClient();
-    const response = await kimi.chat.completions.create({
-      model: 'kimi-k2-turbo-preview',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: text }
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.3,
-      max_tokens: 500,
-    });
-
-    const content = response.choices[0].message.content;
-    if (!content) {
-      throw new Error('Empty response from Kimi');
+    // Call Gemini API
+    const results = await parseMacros(text);
+    
+    if (!results || results.length === 0) {
+      throw new Error('No food items parsed');
     }
 
-    const nutrition = JSON.parse(content);
+    // Take the first result
+    const nutrition = results[0];
 
-    // Validate required fields
-    const required = ['food_name', 'amount', 'calories', 'protein', 'carbs', 'fat', 'fiber'];
-    for (const field of required) {
-      if (!(field in nutrition)) {
-        throw new Error(`Missing field: ${field}`);
-      }
-    }
-
-    // Add to database
+    // Add to database (field names match Gemini output)
     const { data, error } = await supabase
       .from('food_entries')
       .insert({
-        food_name: nutrition.food_name,
-        amount: nutrition.amount,
-        calories: nutrition.calories,
-        protein: nutrition.protein,
-        carbs: nutrition.carbs,
-        fat: nutrition.fat,
-        fiber: nutrition.fiber,
+        food: nutrition.food,
+        amount_g: nutrition.amount_g,
+        kcal: nutrition.kcal,
+        protein_g: nutrition.protein_g,
+        carbs_g: nutrition.carbs_g,
+        fat_g: nutrition.fat_g,
+        fiber_g: nutrition.fiber_g,
         entry_date: date || new Date().toISOString().split('T')[0]
       })
       .select()
       .single();
 
     if (error) {
-      console.error('Supabase error:', error);
       throw error;
     }
 
     return NextResponse.json(data);
 
   } catch (error) {
-    console.error('Kimi API error:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to analyze food' },
+      { error: 'Failed to analyze food', details: message },
       { status: 500 }
     );
   }

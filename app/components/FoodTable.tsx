@@ -10,13 +10,13 @@ interface FoodTableProps {
 export function FoodTable({ entries, onDelete }: FoodTableProps) {
   const totals = entries.reduce(
     (acc, entry) => ({
-      calories: acc.calories + entry.calories,
-      protein: acc.protein + entry.protein,
-      carbs: acc.carbs + entry.carbs,
-      fat: acc.fat + entry.fat,
-      fiber: acc.fiber + entry.fiber,
+      kcal: acc.kcal + entry.kcal,
+      protein_g: acc.protein_g + entry.protein_g,
+      carbs_g: acc.carbs_g + entry.carbs_g,
+      fat_g: acc.fat_g + entry.fat_g,
+      fiber_g: acc.fiber_g + entry.fiber_g,
     }),
-    { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
+    { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0, fiber_g: 0 }
   );
 
   return (
@@ -26,7 +26,7 @@ export function FoodTable({ entries, onDelete }: FoodTableProps) {
           <thead>
             <tr className="bg-gray-800 text-white">
               <th className="px-4 py-3 text-left text-sm font-medium">Food</th>
-              <th className="px-4 py-3 text-right text-sm font-medium">Amount</th>
+              <th className="px-4 py-3 text-right text-sm font-medium">Amount (g)</th>
               <th className="px-4 py-3 text-right text-sm font-medium">kcal</th>
               <th className="px-4 py-3 text-right text-sm font-medium">Protein</th>
               <th className="px-4 py-3 text-right text-sm font-medium">Carbs</th>
@@ -38,13 +38,13 @@ export function FoodTable({ entries, onDelete }: FoodTableProps) {
           <tbody>
             {entries.map((entry) => (
               <tr key={entry.id} className="border-b border-gray-100 hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm">{entry.food_name}</td>
-                <td className="px-4 py-3 text-sm text-right text-black">{entry.amount}</td>
-                <td className="px-4 py-3 text-sm text-right">{entry.calories}</td>
-                <td className="px-4 py-3 text-sm text-right">{entry.protein}g</td>
-                <td className="px-4 py-3 text-sm text-right">{entry.carbs}g</td>
-                <td className="px-4 py-3 text-sm text-right">{entry.fat}g</td>
-                <td className="px-4 py-3 text-sm text-right">{entry.fiber}g</td>
+                <td className="px-4 py-3 text-sm text-black">{entry.food}</td>
+                <td className="px-4 py-3 text-sm text-right text-black">{entry.amount_g}g</td>
+                <td className="px-4 py-3 text-sm text-right text-black">{entry.kcal}</td>
+                <td className="px-4 py-3 text-sm text-right text-black">{entry.protein_g}g</td>
+                <td className="px-4 py-3 text-sm text-right text-black">{entry.carbs_g}g</td>
+                <td className="px-4 py-3 text-sm text-right text-black">{entry.fat_g}g</td>
+                <td className="px-4 py-3 text-sm text-right text-black">{entry.fiber_g}g</td>
                 <td className="px-4 py-3 text-center">
                   <button
                     onClick={() => onDelete(entry.id)}
@@ -65,12 +65,12 @@ export function FoodTable({ entries, onDelete }: FoodTableProps) {
             )}
             {entries.length > 0 && (
               <tr className="bg-gray-100 font-semibold">
-                <td className="px-4 py-3 text-sm" colSpan={2}>Total</td>
-                <td className="px-4 py-3 text-sm text-right">{totals.calories}</td>
-                <td className="px-4 py-3 text-sm text-right">{totals.protein.toFixed(1)}g</td>
-                <td className="px-4 py-3 text-sm text-right">{totals.carbs.toFixed(1)}g</td>
-                <td className="px-4 py-3 text-sm text-right">{totals.fat.toFixed(1)}g</td>
-                <td className="px-4 py-3 text-sm text-right">{totals.fiber.toFixed(1)}g</td>
+                <td className="px-4 py-3 text-sm text-black" colSpan={2}>Total</td>
+                <td className="px-4 py-3 text-sm text-right text-black">{totals.kcal}</td>
+                <td className="px-4 py-3 text-sm text-right text-black">{totals.protein_g.toFixed(1)}g</td>
+                <td className="px-4 py-3 text-sm text-right text-black">{totals.carbs_g.toFixed(1)}g</td>
+                <td className="px-4 py-3 text-sm text-right text-black">{totals.fat_g.toFixed(1)}g</td>
+                <td className="px-4 py-3 text-sm text-right text-black">{totals.fiber_g.toFixed(1)}g</td>
                 <td></td>
               </tr>
             )}

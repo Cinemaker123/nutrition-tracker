@@ -62,13 +62,13 @@ export function FoodInput({ onFoodAdded, selectedDate }: FoodInputProps) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="What did you eat? (e.g., 2 eggs and toast)"
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-gray-500"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !text.trim()}
-            className="px-6 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-3 bg-blue-700 text-white rounded-lg font-medium hover:bg-blue-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? '...' : 'Add'}
           </button>

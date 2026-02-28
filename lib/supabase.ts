@@ -5,16 +5,16 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Types for our database
+// Types for our database - matching Gemini's output
 type FoodEntry = {
   id: string;
-  food_name: string;
-  amount: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  fiber: number;
+  food: string;
+  amount_g: number;
+  kcal: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  fiber_g: number;
   entry_date: string;
   created_at: string;
 };
