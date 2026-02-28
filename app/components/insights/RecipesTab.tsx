@@ -211,17 +211,17 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
   if (showArchive) {
     return (
       <div>
-        <div className="flex gap-3 mb-6">
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <button
             onClick={() => setShowArchive(false)}
-            className="analyze-btn flex-1 h-[46px] bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center justify-center"
+            className="analyze-btn w-full sm:flex-1 h-[46px] bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center justify-center"
           >
             Back to Recipes
           </button>
           <button
             onClick={loadArchive}
             disabled={isLoadingArchive}
-            className="px-4 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center"
+            className="w-full sm:w-auto px-4 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center justify-center"
           >
             {isLoadingArchive ? 'Loading...' : 'Refresh Archive'}
           </button>
@@ -331,25 +331,25 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
   if (!hasGenerated) {
     return (
       <div>
-        <div className="flex gap-3 mb-6">
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <button
             onClick={loadRecipes}
             disabled={isLoading}
-            className="flex-1 h-[46px] bg-[#3a8fd1] text-white rounded-lg font-medium hover:bg-[#2d7bc4] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+            className="w-full sm:flex-1 h-[46px] bg-[#3a8fd1] text-white rounded-lg font-medium hover:bg-[#2d7bc4] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
           >
             {isLoading ? 'Generating...' : 'Generate Recipe Suggestions'}
           </button>
           <button
             onClick={handleSaveToArchive}
             disabled={isSaving || !recipes.length}
-            className="px-4 h-[46px] bg-[#27ae60] text-white rounded-lg font-medium hover:bg-[#219653] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center"
+            className="w-full sm:w-auto px-4 h-[46px] bg-[#27ae60] text-white rounded-lg font-medium hover:bg-[#219653] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
           >
             {isSaving ? 'Saving...' : 'Save to Archive'}
           </button>
           <button
             onClick={loadArchive}
             disabled={isLoadingArchive}
-            className="px-4 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center"
+            className="w-full sm:w-auto px-4 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center justify-center"
           >
             {isLoadingArchive ? 'Loading...' : 'View Archive'}
           </button>
@@ -384,25 +384,25 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
   return (
     <div>
       {/* Action Buttons */}
-      <div className="flex gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <button
           onClick={loadRecipes}
           disabled={isLoading}
-          className="flex-1 h-[46px] bg-[#3a8fd1] text-white rounded-lg font-medium hover:bg-[#2d7bc4] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+          className="w-full sm:flex-1 h-[46px] bg-[#3a8fd1] text-white rounded-lg font-medium hover:bg-[#2d7bc4] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
         >
           {isLoading ? 'Generating...' : 'Generate New Recipes'}
         </button>
         <button
           onClick={handleSaveToArchive}
           disabled={isSaving || !recipes.length}
-          className="px-4 h-[46px] bg-[#27ae60] text-white rounded-lg font-medium hover:bg-[#219653] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center"
+          className="w-full sm:w-auto px-4 h-[46px] bg-[#27ae60] text-white rounded-lg font-medium hover:bg-[#219653] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
         >
           {isSaving ? 'Saving...' : 'Save to Archive'}
         </button>
         <button
           onClick={loadArchive}
           disabled={isLoadingArchive}
-          className="px-4 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center"
+          className="w-full sm:w-auto px-4 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center justify-center"
         >
           {isLoadingArchive ? 'Loading...' : 'View Archive'}
         </button>

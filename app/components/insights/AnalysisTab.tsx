@@ -155,25 +155,25 @@ export function AnalysisTab({ selectedDate: initialDate }: AnalysisTabProps) {
   return (
     <div>
       {/* Action Buttons */}
-      <div className="flex gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <button
           onClick={handleAnalyze}
           disabled={isLoading}
-          className="analyze-btn flex-1 h-[46px] bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+          className="analyze-btn w-full sm:flex-1 h-[46px] bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
         >
           {isLoading ? 'Analyzing...' : 'Generate New Analysis'}
         </button>
         <button
           onClick={handleSaveToArchive}
           disabled={isSaving || !analysis}
-          className="px-4 h-[46px] bg-[#27ae60] text-white rounded-lg font-medium hover:bg-[#219653] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center"
+          className="w-full sm:w-auto px-4 h-[46px] bg-[#27ae60] text-white rounded-lg font-medium hover:bg-[#219653] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
         >
           {isSaving ? 'Saving...' : 'Save to Archive'}
         </button>
         <button
           onClick={loadArchive}
           disabled={isLoadingArchive}
-          className="px-4 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center"
+          className="w-full sm:w-auto px-4 h-[46px] bg-[#8B6914] text-white rounded-lg font-medium hover:bg-[#6B4F0F] disabled:bg-[#A08040] disabled:cursor-not-allowed transition-colors flex items-center justify-center"
         >
           {isLoadingArchive ? 'Loading...' : 'View Archive'}
         </button>
@@ -215,37 +215,27 @@ export function AnalysisTab({ selectedDate: initialDate }: AnalysisTabProps) {
                     <span className="text-xs font-medium text-[#8B6914]">
                       {item.date_range}
                     </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-[var(--muted)]">
-                        {new Date(item.created_at).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                      <button
-                        onClick={() => handleDeleteClick(item.id)}
-                        className={`p-1 rounded transition-colors ${deleteState.colorClass}`}
-                        title={deleteState.title}
+                    <button
+                      onClick={() => handleDeleteClick(item.id)}
+                      className={`p-1 rounded transition-colors ${deleteState.colorClass}`}
+                      title={deleteState.title}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M3 6h18" />
-                          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                        </svg>
-                      </button>
-                    </div>
+                        <path d="M3 6h18" />
+                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                      </svg>
+                    </button>
                   </div>
                   <p className="text-[var(--foreground)] leading-relaxed whitespace-pre-wrap font-mono text-sm">
                     {item.analysis}
