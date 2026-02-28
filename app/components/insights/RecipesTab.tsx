@@ -174,28 +174,29 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
   });
 
   // Copy recipe to clipboard
-  const [copyMessage, setCopyMessage] = useState('');
+  const [copiedRecipe, setCopiedRecipe] = useState<string | null>(null);
   
   const handleCopyRecipe = async (recipe: RecipeSuggestion) => {
     const text = `${recipe.name} (${recipe.primary_macro})\n${recipe.description}`;
+    const recipeKey = `${recipe.name}-${recipe.description}`;
     
     // Check if Clipboard API is available
     if (navigator.clipboard && navigator.clipboard.writeText) {
       try {
         await navigator.clipboard.writeText(text);
-        setCopyMessage('Copied!');
-        setTimeout(() => setCopyMessage(''), 1500);
+        setCopiedRecipe(recipeKey);
+        setTimeout(() => setCopiedRecipe(null), 1500);
       } catch (err) {
         console.error('Failed to copy:', err);
-        fallbackCopy(text);
+        fallbackCopy(text, recipeKey);
       }
     } else {
       // Fallback for mobile browsers without Clipboard API
-      fallbackCopy(text);
+      fallbackCopy(text, recipeKey);
     }
   };
   
-  const fallbackCopy = (text: string) => {
+  const fallbackCopy = (text: string, recipeKey: string) => {
     // Create temporary textarea element
     const textarea = document.createElement('textarea');
     textarea.value = text;
@@ -211,17 +212,12 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
       document.body.removeChild(textarea);
       
       if (successful) {
-        setCopyMessage('Copied!');
-        setTimeout(() => setCopyMessage(''), 1500);
-      } else {
-        setCopyMessage('Copy failed');
-        setTimeout(() => setCopyMessage(''), 1500);
+        setCopiedRecipe(recipeKey);
+        setTimeout(() => setCopiedRecipe(null), 1500);
       }
     } catch (err) {
       document.body.removeChild(textarea);
       console.error('Fallback copy failed:', err);
-      setCopyMessage('Copy not supported');
-      setTimeout(() => setCopyMessage(''), 1500);
     }
   };
 
@@ -265,10 +261,6 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
         {error && (
           <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
         )}
-        
-        {copyMessage && (
-          <p className="text-green-500 text-sm mb-4 text-center">{copyMessage}</p>
-        )}
 
         <div className="space-y-6">
           <h3 className="text-sm font-semibold text-[var(--muted)] uppercase tracking-wider">
@@ -311,7 +303,10 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
                   </button>
                 </div>
                 <div className="space-y-3">
-                  {archive.suggestions.map((recipe, idx) => (
+                  {archive.suggestions.map((recipe, idx) => {
+                    const recipeKey = `${recipe.name}-${recipe.description}`;
+                    const isCopied = copiedRecipe === recipeKey;
+                    return (
                     <div
                       key={idx}
                       className="p-3 bg-[var(--card-bg-alt)] rounded border border-[var(--border-color)]"
@@ -336,7 +331,9 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
                         </div>
                         <button
                           onClick={() => handleCopyRecipe(recipe)}
-                          className="p-1.5 rounded transition-colors ml-2 text-gray-400 hover:text-[#3a8fd1]"
+                          className={`p-1.5 rounded transition-colors ml-2 ${
+                            isCopied ? 'text-green-500' : 'text-gray-400 hover:text-[#3a8fd1]'
+                          }`}
                           title="Copy to clipboard"
                         >
                           <svg
@@ -356,7 +353,8 @@ export function RecipesTab({ initialEndDate }: RecipesTabProps) {
                         </button>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))
