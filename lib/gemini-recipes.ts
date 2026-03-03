@@ -73,6 +73,8 @@ ${JSON.stringify(formattedData, null, 2)}`;
     contents: prompt,
     config: {
       systemInstruction: SYSTEM_PROMPT,
+      temperature: 0.3,
+      maxOutputTokens: 4000,
       responseMimeType: "application/json",
     },
   });
