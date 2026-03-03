@@ -9,7 +9,7 @@ Respond ONLY with a JSON array, no markdown, no explanation:
   {
     "name": string,
     "description": string (one sentence),
-    "primary_macro": string (e.g. "protein"),
+    "primary_macro": string ("protein", "carbs", or "fat"),
     "type": "meal" | "snack"
   }
 ]`;
@@ -69,7 +69,7 @@ Food log:
 ${JSON.stringify(formattedData, null, 2)}`;
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-lite",
+    model: "gemini-2.5-flash",
     contents: prompt,
     config: {
       systemInstruction: SYSTEM_PROMPT,
