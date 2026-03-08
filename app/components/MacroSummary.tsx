@@ -43,8 +43,13 @@ function getSmartMessage(
   
   // Protein - special handling for cuts (only if there are entries)
   if (name === 'protein_g' && hasEntries) {
+    // RDA milestone reached (92g) - less urgent message
+    if (value >= 92 && percentage < 100) {
+      return { text: `✓ RDA hit — ${Math.round(remaining)}g to go for muscle growth`, status: 'ok' };
+    }
     if (percentage < 50 && hour >= 16) { // After 4pm
-      return { text: `⚠️ ${Math.round(remaining)}g still needed — prioritize protein in remaining meals`, status: 'warn' };
+      const toRDA = 92 - value;
+      return { text: `⚠️ ${Math.round(toRDA)}g to RDA — prioritize protein in remaining meals`, status: 'warn' };
     }
     if (percentage < 40 && hour >= 20) { // After 8pm
       return { text: `⚠️ Muscle loss risk — prioritize protein!`, status: 'warn' };
@@ -143,11 +148,19 @@ export function MacroSummary({ entries }: MacroSummaryProps) {
                     {Math.round(value)} / {goal}{unit}
                   </span>
                 </div>
-                <div className="h-3 bg-gray-200  rounded-full overflow-hidden">
+                <div className="h-3 bg-gray-200 rounded-full overflow-hidden relative">
                   <div
                     className="h-full transition-all duration-300"
                     style={{ width: `${percentage}%`, backgroundColor: `var(${config.cssVar})` }}
                   />
+                  {/* RDA milestone marker for protein (92g) */}
+                  {name === 'protein_g' && (
+                    <div
+                      className="absolute top-0 bottom-0 w-0.5"
+                      style={{ left: `${Math.min((92 / goal) * 100, 100)}%`, backgroundColor: 'var(--foreground)', opacity: 0.5 }}
+                      title="RDA milestone (92g)"
+                    />
+                  )}
                 </div>
                 <div className={`text-xs mt-1 font-medium ${
                   message.status === 'over' ? 'text-red-600' :
