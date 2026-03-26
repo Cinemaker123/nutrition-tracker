@@ -111,11 +111,11 @@ recipes:
 
 | Feature | Model | Reason |
 |---------|-------|--------|
-| Food Entry Parsing | `gemini-2.5-flash-lite` | Fast, reliable JSON extraction |
-| Recipe Suggestions | `gemini-2.5-flash-lite` | Quick meal recommendations |
+| Food Entry Parsing | `gemini-2.5-flash` | Fast, reliable JSON extraction |
+| Recipe Suggestions | `gemini-2.5-flash` | Quick meal recommendations |
 | 7-Day Analysis | `gemini-2.5-flash` | Superior reasoning for pattern recognition |
 
-**Default:** `gemini-2.5-flash-lite` for all features except 7-day analysis.
+**Default:** `gemini-2.5-flash` for all features.
 
 ---
 

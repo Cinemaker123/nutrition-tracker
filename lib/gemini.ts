@@ -21,10 +21,12 @@ export async function parseMacros(userInput: string): Promise<MacroResult[]> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-lite",
+    model: "gemini-2.5-flash",
     contents: userInput,
     config: {
       systemInstruction: SYSTEM_PROMPT,
+      temperature: 0.3,
+      maxOutputTokens: 4000,
       responseMimeType: "application/json",
     },
   });
