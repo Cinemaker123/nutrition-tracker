@@ -42,7 +42,7 @@ ${JSON.stringify(formattedData, null, 2)}`;
     config: {
       systemInstruction: SYSTEM_PROMPT,
       temperature: 0.3,
-      maxOutputTokens: 4000,
+      maxOutputTokens: 16384,
     },
   });
 
