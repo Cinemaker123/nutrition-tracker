@@ -19,6 +19,7 @@ function NutritionTracker() {
   );
   const [entries, setEntries] = useState<FoodEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [analysisError, setAnalysisError] = useState<string>('');
 
   const fetchEntries = useCallback(async () => {
     setIsLoading(true);
@@ -63,7 +64,7 @@ function NutritionTracker() {
         <DatePicker selectedDate={selectedDate} onDateChange={setSelectedDate} />
 
         {/* Food Input */}
-        <FoodInput onFoodAdded={fetchEntries} selectedDate={selectedDate} />
+        <FoodInput onFoodAdded={fetchEntries} selectedDate={selectedDate} onError={setAnalysisError} />
 
         {/* Loading State */}
         {isLoading ? (
@@ -77,7 +78,7 @@ function NutritionTracker() {
             <MacroSummary entries={entries} />
 
             {/* Food Table */}
-            <FoodTable entries={entries} onDelete={handleDelete} />
+            <FoodTable entries={entries} onDelete={handleDelete} analysisError={analysisError} onError={setAnalysisError} />
 
             {/* Insights Link */}
             <div className="mt-8 pt-8 border-t border-[var(--border-color)]">

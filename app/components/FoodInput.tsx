@@ -5,9 +5,10 @@ import { useState } from 'react';
 interface FoodInputProps {
   onFoodAdded: () => void;
   selectedDate: string;
+  onError?: (details: string) => void;
 }
 
-export function FoodInput({ onFoodAdded, selectedDate }: FoodInputProps) {
+export function FoodInput({ onFoodAdded, selectedDate, onError }: FoodInputProps) {
   const [text, setText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -19,6 +20,7 @@ export function FoodInput({ onFoodAdded, selectedDate }: FoodInputProps) {
     
     setIsLoading(true);
     setError('');
+    onError?.('');
     
     const password = localStorage.getItem('app_password');
     
@@ -41,13 +43,16 @@ export function FoodInput({ onFoodAdded, selectedDate }: FoodInputProps) {
       
       if (!response.ok) {
         const data = await response.json();
+        // Pass full details to parent for FoodTable popup
+        onError?.(data.details || '');
         throw new Error(data.error || 'Failed to analyze food');
       }
       
       setText('');
       onFoodAdded();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      const message = err instanceof Error ? err.message : 'Something went wrong';
+      setError(message);
     } finally {
       setIsLoading(false);
     }
